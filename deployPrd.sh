@@ -93,7 +93,7 @@ cd .. && mkdir ./media ./media/tag_group_icons ./media/uploads
 git init > /dev/null
 git clone git@github.com:igoss/project_x.git
 rm -rf .git
-mkdir $PWD/project_x/makemigrations && touch $PWD/project_x/makemigrations/__init__.py
+mkdir $PWD/project_x/migrations && touch $PWD/project_x/migrations/__init__.py
 
 python manage.py makemigrations
 python manage.py migrate
