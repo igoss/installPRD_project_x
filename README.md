@@ -1,7 +1,7 @@
 # Использование 
-`$ ./deployPrd.sh db_username db_password server/domain__name`
-_На входе 3 параметра_
-
+`$ ./deployPrd.sh db_username db_password server/domain__name` <br>
+_На входе 3 параметра_ <br>
+<br>
 Выполняется установка и настрока связки: nginx + unicorns + django, а так же <br>
 раскатка проекта в текущей директории на серверной тачке с CentOS 7. <br>
 Раскатка включает в себя:
