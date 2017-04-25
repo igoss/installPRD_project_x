@@ -137,7 +137,7 @@ sudo echo '[Service]' >> /etc/systemd/system/gunicorn.service
 sudo echo 'User=sir.igoss' >> /etc/systemd/system/gunicorn.service
 sudo echo 'Group=sir.igoss' >> /etc/systemd/system/gunicorn.service
 sudo echo "WorkingDirectory=$PWD" >> /etc/systemd/system/gunicorn.service
-sudo echo "ExecStart=$PWD/venv_django/bin/gunicorn --workers 3 --bind unix:$PWD/app_django.sock configuration.wsgi:application" >> /etc/systemd/system/gunicorn.service
+sudo echo "ExecStart=$PWD/venv_django/bin/gunicorn --workers 3 --bind unix:$PWD/app_django/projectX.sock configuration.wsgi:application" >> /etc/systemd/system/gunicorn.service
 sudo echo '[Install]' >> /etc/systemd/system/gunicorn.service
 sudo echo 'WantedBy=multi-user.target' >> /etc/systemd/system/gunicorn.service
 sudo chmod 0644 /etc/systemd/system/gunicorn.service
@@ -182,7 +182,7 @@ sudo echo '        proxy_set_header Host $http_host;' >> /etc/nginx/nginx.conf
 sudo echo '        proxy_set_header X-Real-IP $remote_addr;' >> /etc/nginx/nginx.conf
 sudo echo '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> /etc/nginx/nginx.conf
 sudo echo '        proxy_set_header X-Forwarded-Proto $scheme;' >> /etc/nginx/nginx.conf
-sudo echo "        proxy_pass http://unix:$PWD/app_django.sock;" >> /etc/nginx/nginx.conf
+sudo echo "        proxy_pass http://unix:$PWD/projectX.sock;" >> /etc/nginx/nginx.conf
 sudo echo '    }' >> /etc/nginx/nginx.conf
 sudo echo '    location /static {' >> /etc/nginx/nginx.conf
 sudo echo '        autoindex on;' >> /etc/nginx/nginx.conf
