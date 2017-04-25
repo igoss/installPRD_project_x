@@ -130,16 +130,16 @@ cd ..
 sudo rm -rf /etc/systemd/system/gunicorn.service
 sudo touch /etc/systemd/system/gunicorn.service
 sudo chmod 0777 /etc/systemd/system/gunicorn.service
-sudo echo '[Unit]' >> /etc/systemd/system/gunicorn.service
-sudo echo 'Description=gunicorn daemon' >> /etc/systemd/system/gunicorn.service
-sudo echo 'After=network.target' >> /etc/systemd/system/gunicorn.service
-sudo echo '[Service]' >> /etc/systemd/system/gunicorn.service
-sudo echo 'User=sir.igoss' >> /etc/systemd/system/gunicorn.service
-sudo echo 'Group=sir.igoss' >> /etc/systemd/system/gunicorn.service
-sudo echo "WorkingDirectory=$PWD" >> /etc/systemd/system/gunicorn.service
+sudo echo '[Unit]' 															 >> /etc/systemd/system/gunicorn.service
+sudo echo 'Description=gunicorn daemon' 												 >> /etc/systemd/system/gunicorn.service
+sudo echo 'After=network.target' 													 >> /etc/systemd/system/gunicorn.service
+sudo echo '[Service]' 															 >> /etc/systemd/system/gunicorn.service
+sudo echo 'User=sir.igoss' 														 >> /etc/systemd/system/gunicorn.service
+sudo echo 'Group=sir.igoss' 														 >> /etc/systemd/system/gunicorn.service
+sudo echo "WorkingDirectory=$PWD/app_django" 												 >> /etc/systemd/system/gunicorn.service
 sudo echo "ExecStart=$PWD/venv_django/bin/gunicorn --workers 3 --bind unix:$PWD/app_django/projectX.sock configuration.wsgi:application" >> /etc/systemd/system/gunicorn.service
-sudo echo '[Install]' >> /etc/systemd/system/gunicorn.service
-sudo echo 'WantedBy=multi-user.target' >> /etc/systemd/system/gunicorn.service
+sudo echo '[Install]' 															 >> /etc/systemd/system/gunicorn.service
+sudo echo 'WantedBy=multi-user.target' 													 >> /etc/systemd/system/gunicorn.service
 sudo chmod 0644 /etc/systemd/system/gunicorn.service
 
 # run daemon
