@@ -62,7 +62,7 @@ sudo systemctl restart postgresql
 sudo systemctl enable postgresql
 
 sudo -u postgres psql postgres -c "CREATE DATABASE project_x;"
-sudo -u postgres psql postgres -c "CREATE USER $db_username WITH PASSWORD $db_password;"
+sudo -u postgres psql postgres -c "CREATE USER $db_username WITH PASSWORD '$db_password';"
 sudo -u postgres psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE project_x TO $db_username;"
 
 #init project
