@@ -62,7 +62,7 @@ sudo systemctl restart postgresql
 sudo systemctl enable postgresql
 
 sudo -u postgres psql postgres -c "CREATE DATABASE project_x;"
-sudo -u postgres psql postgres -c "CREATE USER '$db_username' WITH PASSWORD $db_password;"
+sudo -u postgres psql postgres -c "CREATE USER $db_username WITH PASSWORD $db_password;"
 sudo -u postgres psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE project_x TO $db_username;"
 
 #init project
@@ -87,7 +87,7 @@ django-admin startproject configuration $PWD/app_django && cd "$_"
 cd $PWD/configuration
 sed -i -e "s/sqlite3/postgresql_psycopg2/g" ./settings.py
 sed -i -e "s/DEBUG = True/DEBUG = False/g"  ./settings.py
-sed -i -e "s/ALLOWED_HOSTS = \\[\\]/ALLOWED_HOSTS = [$server_name]"
+sed -i -e "s/ALLOWED_HOSTS = \\[\\]/ALLOWED_HOSTS = [$server_name]/g"
 sed -i -e "s/'NAME': os.path.join(BASE_DIR, 'db.postgresql_psycopg2'),/'NAME': 'project_x', 'USER': '$db_username', 'PASSWORD': '$db_password', 'HOST': 'localhost', 'PORT': '',/g" ./settings.py
 sed -i -e "s/TIME_ZONE = 'UTC'/TIME_ZONE = 'Europe\/Moscow'; DATE_FORMAT = 'd E Y в G:i'/g"                                                                             ./settings.py
 sed -i -e "s/    'django.contrib.staticfiles',/    'django.contrib.staticfiles','backend', 'ckeditor', 'ckeditor_uploader',/g"                                          ./settings.py
@@ -99,7 +99,6 @@ echo "MEDIA_URL = '/media/'"                                                    
 echo "MEDIA_ROOT = os.path.join(BASE_DIR, 'media')"                                   >> settings.py
 echo "CKEDITOR_UPLOAD_PATH = 'uploads/'"                                              >> settings.py
 echo "STATICFILES_DIRS = (os.path.join(BASE_DIR, '$frontend/static/'),)"              >> settings.py
-echo '--> OK.'
 
 rm -rf urls.py && touch urls.py
 echo '# -*- coding: utf-8 -*-'                                                        >> urls.py
@@ -112,16 +111,17 @@ echo ''                                                                         
 echo 'urlpatterns = ['                                                                >> urls.py
 echo '    url(r"^admin/", admin.site.urls),'                                          >> urls.py
 echo '    url(r"^ckeditor/", include("ckeditor_uploader.urls")),'                     >> urls.py
-echo '    url(r"", include("backend.urls")),'                                       >> urls.py
+echo '    url(r"", include("backend.urls")),'                                         >> urls.py
 echo ']'                                                                              >> urls.py
-echo '--> OK.'
 
 cd .. && mkdir ./media ./media/tag_group_icons ./media/uploads
 
-git init > /dev/null
-git clone -b backend_branch git@github.com:igoss/backend.git
+git clone -b $backend_branch git@github.com:igoss/backend.git
 rm -rf ./backend/.git ./backend/README.md ./backend/.gitignore
 mkdir $PWD/backend/migrations && touch $PWD/backend/migrations/__init__.py
+
+git clone -b $frontend_branch git@github.com:igoss/$frontend_project.git
+rm -rf ./$frontend_project/.git ./$frontend_project/README.md ./$frontend_project/.gitignore
 
 python manage.py makemigrations
 python manage.py migrate
@@ -134,8 +134,8 @@ sudo echo '[Unit]' >> /etc/systemd/system/gunicorn.service
 sudo echo 'Description=gunicorn daemon' >> /etc/systemd/system/gunicorn.service
 sudo echo 'After=network.target' >> /etc/systemd/system/gunicorn.service
 sudo echo '[Service]' >> /etc/systemd/system/gunicorn.service
-sudo echo 'User=root' >> /etc/systemd/system/gunicorn.service
-sudo echo 'Group=root' >> /etc/systemd/system/gunicorn.service
+sudo echo 'User=sir.igoss' >> /etc/systemd/system/gunicorn.service
+sudo echo 'Group=sir.igoss' >> /etc/systemd/system/gunicorn.service
 sudo echo "WorkingDirectory=$PWD" >> /etc/systemd/system/gunicorn.service
 sudo echo "ExecStart=$PWD/venv_django/bin/gunicorn --workers 3 --bind unix:$PWD.sock configuration.wsgi:application" >> /etc/systemd/system/gunicorn.service
 sudo echo '[Install]' >> /etc/systemd/system/gunicorn.service
@@ -175,7 +175,7 @@ sudo echo '    server {' >> /etc/nginx/nginx.conf
 sudo echo '        listen 80;' >> /etc/nginx/nginx.conf
 sudo echo "        server_name $server_name;" >> /etc/nginx/nginx.conf
 sudo echo '        location /static/ {' >> /etc/nginx/nginx.conf
-sudo echo "        root $PWD/..;" >> /etc/nginx/nginx.conf
+sudo echo "        alias $PWD/..;" >> /etc/nginx/nginx.conf
 sudo echo '    }' >> /etc/nginx/nginx.conf
 sudo echo '    location / {' >> /etc/nginx/nginx.conf
 sudo echo '        proxy_set_header Host $http_host;' >> /etc/nginx/nginx.conf
@@ -186,11 +186,11 @@ sudo echo "        proxy_pass http://unix:$PWD/app_django.sock;" >> /etc/nginx/n
 sudo echo '    }' >> /etc/nginx/nginx.conf
 sudo echo '    location /static {' >> /etc/nginx/nginx.conf
 sudo echo '        autoindex on;' >> /etc/nginx/nginx.conf
-sudo echo "        root $PWD/app_django/$frontend_project/static;" >> /etc/nginx/nginx.conf
+sudo echo "        alias $PWD/app_django/$frontend_project/static;" >> /etc/nginx/nginx.conf
 sudo echo '    }' >> /etc/nginx/nginx.conf
 sudo echo '    location /media {' >> /etc/nginx/nginx.conf
 sudo echo '        autoindex on;' >> /etc/nginx/nginx.conf
-sudo echo "        root $PWD/app_django/media;" >> /etc/nginx/nginx.conf
+sudo echo "        alias $PWD/app_django/media;" >> /etc/nginx/nginx.conf
 sudo echo '    }' >> /etc/nginx/nginx.conf
 sudo echo '}' >> /etc/nginx/nginx.conf
 sudo echo '}' >> /etc/nginx/nginx.conf
