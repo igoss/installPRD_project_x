@@ -132,35 +132,53 @@ pip install gunicorn
 mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
-db_settings="
-  'NAME': 'project_x',
-  'USER': '${DB_USERNAME}',
-  'PASSWORD': '${DB_PASSWORD}',
-  'HOST': 'localhost',
-  'PORT': '',
-"
-installed_apps="
+sed -i -e "s/'UTC'/'Europe\/Moscow'/g"      ./configuration/settings.py
+sed '33,40d' ./configuration/settings.py
+sed '77,82d' ./configuration/settings.py
+sed '55,69d' ./configuration/settings.py
+rm -rf settings.py-e
+
+cat >> ./configuration/settings.py << EOF
+INSTALLED_APPS = [
+  'django.contrib.admin',
+  'django.contrib.auth',
+  'django.contrib.contenttypes',
+  'django.contrib.sessions',
+  'django.contrib.messages',
   'django.contrib.staticfiles',
   'backend',
   'ckeditor',
   'ckeditor_uploader',
-"
-template_root="
+]
+
+
+DATABASES = {
+  'default': {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'USER': '${DB_USERNAME}',
+    'PASSWORD': '${DB_PASSWORD}',
+    'HOST': 'localhost',
+    'PORT': '',
+  }
+}
+
+
+TEMPLATES = [
+{
+  'BACKEND': 'django.template.backends.django.DjangoTemplates',
   'DIRS': [os.path.join(BASE_DIR, '${FRONTEND}\/templates\/')],
-"
+  'APP_DIRS': True,
+  'OPTIONS': {
+    'context_processors': [
+      'django.template.context_processors.debug',
+      'django.template.context_processors.request',
+      'django.contrib.auth.context_processors.auth',
+      'django.contrib.messages.context_processors.messages',
+      ],
+    },
+  },
+]
 
-change1="'NAME': os.path.join(BASE_DIR, 'db.postgresql_psycopg2'),"
-change2="'django.contrib.staticfiles,'"
-change3="'DIRS': [],"
-
-sed -i -e "s/sqlite3/postgresql_psycopg2/g" ./configuration/settings.py
-sed -i -e "s/'UTC'/'Europe\/Moscow'/g"      ./configuration/settings.py
-sed -i -e "s/$change1/$db_settings/g"       ./configuration/settings.py
-sed -i -e "s/$change2/$installed_apps/g"    ./configuration/settings.py
-sed -i -e "s/$change3/$template_root/g"     ./configuration/settings.py
-rm -rf settings.py-e
-
-cat >> ./configuration/settings.py << EOF
 DATE_FORMAT = 'd E Y в G:i'
 
 STATIC_URL  = '/static/'
@@ -193,11 +211,11 @@ mkdir -p ./media/tag_group_icons ./media/uploads
 
 #----------------------------------------------------------------------------
 #deploy frontend / backend
-git clone -b $backend_branch git@github.com:igoss/backend.git
+git clone -b ${BACKEND_BRANCH} git@github.com:igoss/backend.git
 rm -rf ./backend/.git ./backend/README.md ./backend/.gitignore
 mkdir ./backend/migrations && touch ./backend/migrations/__init__.py
 
-git clone -b ${FRONTEND} git@github.com:igoss/${FRONTEND}.git
+git clone -b ${FRONTEND_BRANCH} git@github.com:igoss/${FRONTEND}.git
 rm -rf ./${FRONTEND}/.git ./${FRONTEND}/README.md ./${FRONTEND}/.gitignore
 
 python manage.py makemigrations
