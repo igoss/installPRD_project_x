@@ -1,44 +1,86 @@
 #!/usr/bin/env bash
 
-#Script installing environment and deploing backend and frontend
-#Use for CentOS
-#After install:
-# > #gunicorn --bind 0.0.0.0:8000 configuration.wsgi:application
-# > systemctl status gunicorn
+#Attention:
+#DATABASE name is hardcoded (name: project_x)
 
-db_username=$1
-db_password=$2
-server_name=$3
+#Script options:
+#Use -u  | --db_user        --> database username
+#Use -p  | --db_passwd      --> database username password
+#Use -f  | --frontend       --> git project name (app_django frontend part)
+#Use -bb | --backend_branch --> backend deploy branch
+#Use -fb | --frontend_branch--> frontend deploy branch
+#Use -s  | --server         --> server hostname
 
-frontend_project=$4
-frontend_branch=$5
-backend_branch=$6
+#----------------------------------------------------------------------------
+#option parser
+while [[ $# -gt 1 ]]
+do
+key="$1"
 
-if [ -z $db_username ] && [ -z $db_password ]; then
-  echo 'ERROR: input username and password for db - 1st\2nd param'
+case $key in
+    -u|--db_user)
+    DB_USERNAME="$2"
+    shift ;;
+    -p|--db_passwd)
+    DB_PASSWORD="$2"
+    shift ;;
+    -f|--frontend)
+    FRONTEND="$2"
+    shift ;;
+    -bb|--backend_branch)
+    BACKEND_BRANCH="$2"
+    shift ;;
+    -fb|--frontend_branch)
+    FRONTEND_BRANCH="$2"
+    shift ;;
+    -s|--server)
+    SERVER_NAME="$2"
+    shift ;;
+esac
+shift
+done
+
+
+#----------------------------------------------------------------------------
+#option validator
+if [ -z ${DB_USERNAME} ] && [ -z ${DB_PASSWORD} ]; then
+  echo "ERROR: DB user and user passwd are missed!"
+  echo "--> use -u | -p options."
   exit
 fi
 
-if [ -z $server_name ]; then
-  echo 'ERROR: input server/domain name - 3rd param'
+if [ -z ${FRONTEND_BRANCH} ] && [ -z ${BACKEND_BRANCH} ]; then
+  echo "ERROR: frontend or backend release branch is missed!"
+  echo "--> use -fb | -bb options."
   exit
 fi
 
-if [ -z $frontend_project == 'master' ]; then
-  echo 'ERROR: input forntend project - 4th param'
+if [ -z ${FRONTEND} ]; then
+  echo "ERROR: Frontend project not defined!"
+  echo "--> use -f option."
   exit
 fi
 
-if [ -z $frontend_branch ] || [ $frontend_branch == 'master' ]; then
-  echo 'ERROR: input forntend release branch - 5th param'
+if [ -z ${SERVER_NAME} ]; then
+  echo "ERROR: Server hostname is missed!"
+  echo "--> use -s option."
   exit
 fi
 
-if [ -z $backend_branch ] || [ $backend_branch == 'master' ]; then
-  echo 'ERROR: input backend release branch - 6th param'
-  exit
-fi
 
+#----------------------------------------------------------------------------
+#work environment
+wget -O ~/.vimrc http://dumpz.org/25712/nixtext/
+update-alternatives --set editor /usr/bin/vim.basic
+
+useradd -m hotdog -s /bin/bash
+cp ~/.vimrc /home/hotdog
+mkdir /home/hotdog/.ssh
+~/.ssh/authorized_keys
+chown -R hotdog:hotdog /home/hotdog
+
+
+#----------------------------------------------------------------------------
 #packages install
 yes Y | sudo yum install epel-release
 yes Y | sudo yum install gcc
@@ -52,9 +94,11 @@ yes Y | sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 yes Y | sudo yum -y install python35u
 yes Y | sudo yum -y install python35u-pip
 
-#postgreSQL settings
-sudo postgresql-setup initdb
-sudo systemctl start postgresql
+
+#----------------------------------------------------------------------------
+#configure postgreSQL
+postgresql-setup initdb
+systemctl start postgresql
 
 sudo sed -i "s/ident/md5/g" /var/lib/pgsql/data/pg_hba.conf
 
@@ -62,16 +106,18 @@ sudo systemctl restart postgresql
 sudo systemctl enable postgresql
 
 sudo -u postgres psql postgres -c "CREATE DATABASE project_x;"
-sudo -u postgres psql postgres -c "CREATE USER $db_username WITH PASSWORD '$db_password';"
-sudo -u postgres psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE project_x TO $db_username;"
+sudo -u postgres psql postgres -c "CREATE USER ${DB_USERNAME} WITH PASSWORD '${DB_PASSWORD}';"
+sudo -u postgres psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE project_x TO ${DB_USERNAME};"
 
-#init project
-rm -rf $PWD/projectX && mkdir $PWD/projectX && cd "$_"
+
+#----------------------------------------------------------------------------
+#initialize django
+rm -rf /home/hotdog/projectX && mkdir /home/hotdog/projectX && cd "$_"
+
 mkdir $PWD/venv_django
-
 python3.5 -m venv $PWD/venv_django
-source $PWD/venv_django/bin/activate
 
+source $PWD/venv_django/bin/activate
 pip install django==1.9
 pip install psycopg2==2.7.1
 pip install django-ckeditor
@@ -80,124 +126,157 @@ pip install Pillow
 pip install psycopg2
 pip install gunicorn
 
-#django
+
+#----------------------------------------------------------------------------
+#configure project
 mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
-cd $PWD/configuration
-sed -i -e "s/sqlite3/postgresql_psycopg2/g" ./settings.py
-sed -i -e "s/DEBUG = True/DEBUG = False/g"  ./settings.py
-sed -i -e "s/ALLOWED_HOSTS = \\[\\]/ALLOWED_HOSTS = [$server_name]/g"
-sed -i -e "s/'NAME': os.path.join(BASE_DIR, 'db.postgresql_psycopg2'),/'NAME': 'project_x', 'USER': '$db_username', 'PASSWORD': '$db_password', 'HOST': 'localhost', 'PORT': '',/g" ./settings.py
-sed -i -e "s/TIME_ZONE = 'UTC'/TIME_ZONE = 'Europe\/Moscow'; DATE_FORMAT = 'd E Y в G:i'/g"                                                                             ./settings.py
-sed -i -e "s/    'django.contrib.staticfiles',/    'django.contrib.staticfiles','backend', 'ckeditor', 'ckeditor_uploader',/g"                                          ./settings.py
-sed -i -e "s/        'DIRS': \\[\\],/'DIRS': [os.path.join(BASE_DIR, '$frontend\/templates\/')],/g"                                                                     ./settings.py
+db_settings="
+  'NAME': 'project_x',
+  'USER': '${DB_USERNAME}',
+  'PASSWORD': '${DB_PASSWORD}',
+  'HOST': 'localhost',
+  'PORT': '',
+"
+installed_apps="
+  'django.contrib.staticfiles',
+  'backend',
+  'ckeditor',
+  'ckeditor_uploader',
+"
+template_root="
+  'DIRS': [os.path.join(BASE_DIR, '${FRONTEND}\/templates\/')],
+"
+
+change1="'NAME': os.path.join(BASE_DIR, 'db.postgresql_psycopg2'),"
+change2="'django.contrib.staticfiles,'"
+change3="'DIRS': [],"
+
+sed -i -e "s/sqlite3/postgresql_psycopg2/g" ./configuration/settings.py
+sed -i -e "s/'UTC'/'Europe\/Moscow'/g"      ./configuration/settings.py
+sed -i -e "s/$change1/$db_settings/g"       ./configuration/settings.py
+sed -i -e "s/$change2/$installed_apps/g"    ./configuration/settings.py
+sed -i -e "s/$change3/$template_root/g"     ./configuration/settings.py
 rm -rf settings.py-e
-echo "STATIC_URL = '/static/'"                                                        >> settings.py
-echo "STATIC_ROOT = os.path.join(BASE_DIR, '$frontend/static/root')"                  >> settings.py
-echo "MEDIA_URL = '/media/'"                                                          >> settings.py
-echo "MEDIA_ROOT = os.path.join(BASE_DIR, 'media')"                                   >> settings.py
-echo "CKEDITOR_UPLOAD_PATH = 'uploads/'"                                              >> settings.py
-echo "STATICFILES_DIRS = (os.path.join(BASE_DIR, '$frontend/static/'),)"              >> settings.py
 
-rm -rf urls.py && touch urls.py
-echo '# -*- coding: utf-8 -*-'                                                        >> urls.py
-echo 'from django.contrib import admin'                                               >> urls.py
-echo 'from django.conf.urls import url, include'                                      >> urls.py
-echo ''                                                                               >> urls.py
-echo 'from django.conf import settings'                                               >> urls.py
-echo 'from django.conf.urls.static import static'                                     >> urls.py
-echo ''                                                                               >> urls.py
-echo 'urlpatterns = ['                                                                >> urls.py
-echo '    url(r"^admin/", admin.site.urls),'                                          >> urls.py
-echo '    url(r"^ckeditor/", include("ckeditor_uploader.urls")),'                     >> urls.py
-echo '    url(r"", include("backend.urls")),'                                         >> urls.py
-echo ']'                                                                              >> urls.py
+cat >> ./configuration/settings.py << EOF
+DATE_FORMAT = 'd E Y в G:i'
 
-cd .. && mkdir ./media ./media/tag_group_icons ./media/uploads
+STATIC_URL  = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '${FRONTEND}/static/root')
 
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, '${FRONTEND}/static/'),)
+
+EOF
+
+rm -rf ./configuration/urls.py && touch ./configuration/urls.py
+cat >> ./configuration/urls.py << EOF
+# -*- coding: utf-8 -*-
+from django.contrib import admin
+from django.conf.urls import url, include
+
+urlpatterns = [
+  url(r"^admin/", admin.site.urls),
+  url(r"^ckeditor/", include("ckeditor_uploader.urls")),
+  url(r"", include("backend.urls")),
+]
+
+EOF
+
+mkdir -p ./media/tag_group_icons ./media/uploads
+
+
+#----------------------------------------------------------------------------
+#deploy frontend / backend
 git clone -b $backend_branch git@github.com:igoss/backend.git
 rm -rf ./backend/.git ./backend/README.md ./backend/.gitignore
-mkdir $PWD/backend/migrations && touch $PWD/backend/migrations/__init__.py
+mkdir ./backend/migrations && touch ./backend/migrations/__init__.py
 
-git clone -b $frontend_branch git@github.com:igoss/$frontend_project.git
-rm -rf ./$frontend_project/.git ./$frontend_project/README.md ./$frontend_project/.gitignore
+git clone -b ${FRONTEND} git@github.com:igoss/${FRONTEND}.git
+rm -rf ./${FRONTEND}/.git ./${FRONTEND}/README.md ./${FRONTEND}/.gitignore
 
 python manage.py makemigrations
 python manage.py migrate
-cd ..
-#make unicorn daemon
-sudo rm -rf /etc/systemd/system/gunicorn.service
-sudo touch /etc/systemd/system/gunicorn.service
+
+
+#----------------------------------------------------------------------------
+#configure gunicorn daemon
+rm -rf /etc/systemd/system/gunicorn.service
+touch  /etc/systemd/system/gunicorn.service
+
 sudo chmod 0777 /etc/systemd/system/gunicorn.service
-sudo echo '[Unit]' 															 >> /etc/systemd/system/gunicorn.service
-sudo echo 'Description=gunicorn daemon' 												 >> /etc/systemd/system/gunicorn.service
-sudo echo 'After=network.target' 													 >> /etc/systemd/system/gunicorn.service
-sudo echo '[Service]' 															 >> /etc/systemd/system/gunicorn.service
-sudo echo 'User=sir.igoss' 														 >> /etc/systemd/system/gunicorn.service
-sudo echo 'Group=sir.igoss' 														 >> /etc/systemd/system/gunicorn.service
-sudo echo "WorkingDirectory=$PWD/app_django" 												 >> /etc/systemd/system/gunicorn.service
-sudo echo "ExecStart=$PWD/venv_django/bin/gunicorn --workers 3 --bind unix:$PWD/app_django/projectX.sock configuration.wsgi:application" >> /etc/systemd/system/gunicorn.service
-sudo echo '[Install]' 															 >> /etc/systemd/system/gunicorn.service
-sudo echo 'WantedBy=multi-user.target' 													 >> /etc/systemd/system/gunicorn.service
+cat >> /etc/systemd/system/gunicorn.service << EOF
+[Unit]
+Description=gunicorn daemon
+After=network.target
+[Service]
+User=hotdog
+Group=hotdog
+WorkingDirectory=$PWD/app_django
+ExecStart=$PWD/venv_django/bin/gunicorn --workers 1 --bind \
+  unix:$PWD/app_django/projectX.sock configuration.wsgi:application
+[Install]
+WantedBy=multi-user.target
+
+EOF
 sudo chmod 0644 /etc/systemd/system/gunicorn.service
 
-# run daemon
-sudo systemctl daemon-reload
-sudo systemctl stop gunicorn
-sudo systemctl start gunicorn
-sudo systemctl enable gunicorn
+systemctl daemon-reload
+systemctl gunicorn stop
+systemctl gunicorn start
+systemctl gunicorn enable
 
-# nginx settings
-sudo rm -rf /etc/nginx/nginx.conf
-sudo touch /etc/nginx/nginx.conf
-sudo chmod 0777 /etc/nginx/nginx.conf
-sudo echo 'user  nginx;' >> /etc/nginx/nginx.conf
-sudo echo 'worker_processes  1;' >> /etc/nginx/nginx.conf
-sudo echo 'error_log  /var/log/nginx/error.log warn;' >> /etc/nginx/nginx.conf
-sudo echo 'pid        /var/run/nginx.pid;' >> /etc/nginx/nginx.conf
-sudo echo 'events {' >> /etc/nginx/nginx.conf
-sudo echo '    worker_connections  1024;' >> /etc/nginx/nginx.conf
-sudo echo '}' >> /etc/nginx/nginx.conf
-sudo echo 'http {' >> /etc/nginx/nginx.conf
-sudo echo '    include       /etc/nginx/mime.types;' >> /etc/nginx/nginx.conf
-sudo echo '    default_type  application/octet-stream;' >> /etc/nginx/nginx.conf
-sudo echo '    log_format  main  $remote_addr - $remote_user [$time_local] "$request"' >> /etc/nginx/nginx.conf
-sudo echo '                      $status $body_bytes_sent "$http_referer"' >> /etc/nginx/nginx.conf
-sudo echo '                      "$http_user_agent" "$http_x_forwarded_for";' >> /etc/nginx/nginx.conf
-sudo echo '    access_log  /var/log/nginx/access.log  main;' >> /etc/nginx/nginx.conf
-sudo echo '    sendfile        on;' >> /etc/nginx/nginx.conf
-sudo echo '    #tcp_nopush     on;' >> /etc/nginx/nginx.conf
-sudo echo '    keepalive_timeout  65;' >> /etc/nginx/nginx.conf
-sudo echo '    #gzip  on;' >> /etc/nginx/nginx.conf
-sudo echo '    include /etc/nginx/conf.d/*.conf;' >> /etc/nginx/nginx.conf
-sudo echo '    server {' >> /etc/nginx/nginx.conf
-sudo echo '        listen 80;' >> /etc/nginx/nginx.conf
-sudo echo "        server_name $server_name;" >> /etc/nginx/nginx.conf
-sudo echo '        location /static/ {' >> /etc/nginx/nginx.conf
-sudo echo "        alias $PWD/..;" >> /etc/nginx/nginx.conf
-sudo echo '    }' >> /etc/nginx/nginx.conf
-sudo echo '    location / {' >> /etc/nginx/nginx.conf
-sudo echo '        proxy_set_header Host $http_host;' >> /etc/nginx/nginx.conf
-sudo echo '        proxy_set_header X-Real-IP $remote_addr;' >> /etc/nginx/nginx.conf
-sudo echo '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> /etc/nginx/nginx.conf
-sudo echo '        proxy_set_header X-Forwarded-Proto $scheme;' >> /etc/nginx/nginx.conf
-sudo echo "        proxy_pass http://unix:$PWD/projectX.sock;" >> /etc/nginx/nginx.conf
-sudo echo '    }' >> /etc/nginx/nginx.conf
-sudo echo '    location /static {' >> /etc/nginx/nginx.conf
-sudo echo '        autoindex on;' >> /etc/nginx/nginx.conf
-sudo echo "        alias $PWD/app_django/$frontend_project/static;" >> /etc/nginx/nginx.conf
-sudo echo '    }' >> /etc/nginx/nginx.conf
-sudo echo '    location /media {' >> /etc/nginx/nginx.conf
-sudo echo '        autoindex on;' >> /etc/nginx/nginx.conf
-sudo echo "        alias $PWD/app_django/media;" >> /etc/nginx/nginx.conf
-sudo echo '    }' >> /etc/nginx/nginx.conf
-sudo echo '}' >> /etc/nginx/nginx.conf
-sudo echo '}' >> /etc/nginx/nginx.conf
-sudo chmod 0644 /etc/nginx/nginx.conf
 
-sudo usermod -a -G $USER nginx
-chmod 710 /home/$USER
+#----------------------------------------------------------------------------
+#configure nginx
+rm -rf /etc/nginx/nginx.conf
+touch  /etc/nginx/nginx.conf
 
-sudo service nginx restart
-sudo systemctl enable nginx
+chmod 0777 /etc/nginx/nginx.conf
+cat >> /etc/nginx/nginx.conf << EOF
+user hotdog;
+worker_processes 1;
+error_log /home/hotdog/projectX/logs/nginx/error.log warn;
+http {
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+  log_format  main  $remote_addr - $remote_user [$time_local] "$request"
+                    $status $body_bytes_sent "$http_referer"
+                    "$http_user_agent" "$http_x_forwarded_for";
+  access_log /home/hotdog/projectX/logs/nginx/access.log main;
+  sendfile on;
+  #tcp_nopush     on;
+  keepalive_timeout  65;
+  #gzip  on;
+  include /etc/nginx/conf.d/*.conf;
+
+  server{
+    listen 80;
+    server_name ${SERVER_NAME};
+    location /static/ {
+      root $PWD/app_django/frontend/static/;
+    }
+    location /media/ {
+      root $PWD/app_django/media/;
+    }
+    location / {
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_pass http://unix:$PWD/app_django/projectX.sock;
+    }
+  }
+}
+
+EOF
+chmod 0777 /etc/nginx/nginx.conf
+sudo usermod -a -G hotdog nginx
+
+service nginx restart
+systemctl enable nginx
