@@ -262,13 +262,16 @@ cat >> /etc/nginx/nginx.conf << EOF
 user root;
 worker_processes 1;
 error_log /home/hotdog/projectX/logs/nginx/error.log warn;
+events {
+    worker_connections  1024;
+}
 http {
   include       /etc/nginx/mime.types;
   default_type  application/octet-stream;
 
-  log_format   main '$remote_addr - $remote_user [$time_local]  $status '
-      '"$request" $body_bytes_sent "$http_referer" '
-      '"$http_user_agent" "$http_x_forwarded_for"';
+  log_format   main '\$remote_addr - \$remote_user [\$time_local] \$status '
+      '"\$request" \$body_bytes_sent "\$http_referer" '
+      '"\$http_user_agent" "\$http_x_forwarded_for"';
 
   access_log /home/hotdog/projectX/logs/nginx/access.log main;
   sendfile on;
@@ -280,10 +283,10 @@ http {
   server{
     listen 80;
     server_name ${SERVER_NAME};
-    location /static/ {
+    location /static {
       root $PWD/app_django/frontend/static/;
     }
-    location /media/ {
+    location /media {
       root $PWD/app_django/media/;
     }
     location / {
