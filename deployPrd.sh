@@ -133,9 +133,9 @@ mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
 sed -i -e "s/'UTC'/'Europe\/Moscow'/g"      ./configuration/settings.py
-sed '33,40d' ./configuration/settings.py
-sed '77,82d' ./configuration/settings.py
-sed '55,69d' ./configuration/settings.py
+sed '31,40d' ./configuration/settings.py
+sed '45,59d' ./configuration/settings.py
+sed '49,57d' ./configuration/settings.py
 rm -rf settings.py-e
 
 cat >> ./configuration/settings.py << EOF
@@ -155,6 +155,7 @@ INSTALLED_APPS = [
 DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': 'project_x',
     'USER': '${DB_USERNAME}',
     'PASSWORD': '${DB_PASSWORD}',
     'HOST': 'localhost',
@@ -226,6 +227,7 @@ python manage.py migrate
 #configure gunicorn daemon
 rm -rf /etc/systemd/system/gunicorn.service
 touch  /etc/systemd/system/gunicorn.service
+cd ..
 
 sudo chmod 0777 /etc/systemd/system/gunicorn.service
 cat >> /etc/systemd/system/gunicorn.service << EOF
@@ -233,8 +235,8 @@ cat >> /etc/systemd/system/gunicorn.service << EOF
 Description=gunicorn daemon
 After=network.target
 [Service]
-User=hotdog
-Group=hotdog
+User=root
+Group=root
 WorkingDirectory=$PWD/app_django
 ExecStart=$PWD/venv_django/bin/gunicorn --workers 1 --bind \
   unix:$PWD/app_django/projectX.sock configuration.wsgi:application
@@ -245,9 +247,9 @@ EOF
 sudo chmod 0644 /etc/systemd/system/gunicorn.service
 
 systemctl daemon-reload
-systemctl gunicorn stop
-systemctl gunicorn start
-systemctl gunicorn enable
+systemctl stop   gunicorn
+systemctl start  gunicorn
+systemctl enable gunicorn
 
 
 #----------------------------------------------------------------------------
@@ -257,15 +259,17 @@ touch  /etc/nginx/nginx.conf
 
 chmod 0777 /etc/nginx/nginx.conf
 cat >> /etc/nginx/nginx.conf << EOF
-user hotdog;
+user root;
 worker_processes 1;
 error_log /home/hotdog/projectX/logs/nginx/error.log warn;
 http {
   include       /etc/nginx/mime.types;
   default_type  application/octet-stream;
-  log_format  main  $remote_addr - $remote_user [$time_local] "$request"
-                    $status $body_bytes_sent "$http_referer"
-                    "$http_user_agent" "$http_x_forwarded_for";
+
+  log_format   main '$remote_addr - $remote_user [$time_local]  $status '
+      '"$request" $body_bytes_sent "$http_referer" '
+      '"$http_user_agent" "$http_x_forwarded_for"';
+
   access_log /home/hotdog/projectX/logs/nginx/access.log main;
   sendfile on;
   #tcp_nopush     on;
@@ -283,10 +287,10 @@ http {
       root $PWD/app_django/media/;
     }
     location / {
-      proxy_set_header Host $http_host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header Host \$http_host;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto \$scheme;
       proxy_pass http://unix:$PWD/app_django/projectX.sock;
     }
   }
