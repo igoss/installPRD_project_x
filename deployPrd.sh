@@ -132,10 +132,10 @@ pip install gunicorn
 mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
-sed -i -e "s/'UTC'/'Europe\/Moscow'/g"      ./configuration/settings.py
-sed '31,40d' ./configuration/settings.py
-sed '45,59d' ./configuration/settings.py
-sed '49,57d' ./configuration/settings.py
+sed -i -e "s/'UTC'/'Europe\/Moscow'/g" ./configuration/settings.py >> /dev/null
+sed '31,40d' ./configuration/settings.py >> /dev/null
+sed '45,59d' ./configuration/settings.py >> /dev/null
+sed '49,57d' ./configuration/settings.py >> /dev/null
 rm -rf settings.py-e
 
 cat >> ./configuration/settings.py << EOF
@@ -167,7 +167,7 @@ DATABASES = {
 TEMPLATES = [
 {
   'BACKEND': 'django.template.backends.django.DjangoTemplates',
-  'DIRS': [os.path.join(BASE_DIR, '${FRONTEND}\/templates\/')],
+  'DIRS': [os.path.join(BASE_DIR, '${FRONTEND}/templates/')],
   'APP_DIRS': True,
   'OPTIONS': {
     'context_processors': [
@@ -254,6 +254,7 @@ systemctl enable gunicorn
 
 #----------------------------------------------------------------------------
 #configure nginx
+mkdir -p $PWD/logs/nginx
 rm -rf /etc/nginx/nginx.conf
 touch  /etc/nginx/nginx.conf
 
