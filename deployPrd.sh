@@ -184,7 +184,7 @@ TEMPLATES = [
 DATE_FORMAT = 'd E Y в G:i'
 
 STATIC_URL  = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '${FRONTEND}/static/root')
+STATIC_ROOT = os.path.join(BASE_DIR, '${FRONTEND}/static')
 
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, '../../media_django')
