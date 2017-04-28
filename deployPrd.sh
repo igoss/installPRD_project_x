@@ -254,7 +254,7 @@ systemctl enable gunicorn
 
 #----------------------------------------------------------------------------
 #configure nginx
-mkdir -p /tmp/django-logs/nginx
+mkdir -p $PWD/logs-django/nginx
 rm -rf /etc/nginx/nginx.conf
 touch  /etc/nginx/nginx.conf
 
@@ -262,7 +262,7 @@ chmod 0777 /etc/nginx/nginx.conf
 cat >> /etc/nginx/nginx.conf << EOF
 user root;
 worker_processes 1;
-error_log /tmp/django-logs/nginx/error.log warn;
+error_log $PWD/logs-django/nginx/error.log warn;
 events {
     worker_connections  1024;
 }
@@ -274,7 +274,7 @@ http {
       '"\$request" \$body_bytes_sent "\$http_referer" '
       '"\$http_user_agent" "\$http_x_forwarded_for"';
 
-  access_log /tmp/django-logs/nginx/access.log main;
+  access_log $PWD/logs-django/nginx/access.log main;
   sendfile on;
   #tcp_nopush     on;
   keepalive_timeout  65;
