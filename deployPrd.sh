@@ -288,7 +288,7 @@ http {
       root $PWD/app_django/frontend;
     }
     location /media {
-      root $PWD/../../;
+      root $PWD/../;
     }
     location / {
       proxy_set_header Host \$http_host;
