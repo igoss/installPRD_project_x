@@ -235,8 +235,8 @@ cat >> /etc/systemd/system/gunicorn.service << EOF
 Description=gunicorn daemon
 After=network.target
 [Service]
-User=hotdog
-Group=hotdog
+User=root
+Group=root
 WorkingDirectory=$PWD/app_django
 ExecStart=$PWD/venv_django/bin/gunicorn --workers 1 --bind \
   unix:$PWD/app_django/projectX.sock configuration.wsgi:application
@@ -260,7 +260,7 @@ touch  /etc/nginx/nginx.conf
 
 chmod 0777 /etc/nginx/nginx.conf
 cat >> /etc/nginx/nginx.conf << EOF
-user hotdog;
+user root;
 worker_processes 1;
 error_log /tmp/django-logs/nginx/error.log warn;
 events {
