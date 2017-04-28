@@ -2,6 +2,7 @@
 
 #Attention:
 #DATABASE name is hardcoded (name: project_x)
+#After install need collect staticfiles: venv python manage.py collectstatic
 
 #Script options:
 #Use -u  | --db_user        --> database username
@@ -189,8 +190,6 @@ MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, '${FRONTEND}/static/'),)
-
 EOF
 
 rm -rf ./configuration/urls.py && touch ./configuration/urls.py
@@ -285,10 +284,10 @@ http {
     listen 80;
     server_name ${SERVER_NAME};
     location /static {
-      root $PWD/app_django/frontend/static/;
+      root $PWD/app_django/frontend;
     }
     location /media {
-      root $PWD/app_django/media/;
+      root $PWD/app_django/media;
     }
     location / {
       proxy_set_header Host \$http_host;
