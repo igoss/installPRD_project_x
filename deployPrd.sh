@@ -283,11 +283,12 @@ http {
   server{
     listen 80;
     server_name ${SERVER_NAME};
+    client_max_body_size 20M;
     location /static {
       root $PWD/app_django/frontend;
     }
     location /media {
-      root $PWD/app_django/media;
+      root $PWD/app_django;
     }
     location / {
       proxy_set_header Host \$http_host;
