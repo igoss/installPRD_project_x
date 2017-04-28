@@ -187,7 +187,7 @@ STATIC_URL  = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, '${FRONTEND}/static/root')
 
 MEDIA_URL  = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, '../../media_django')
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
 EOF
@@ -206,7 +206,7 @@ urlpatterns = [
 
 EOF
 
-mkdir -p ./media/tag_group_icons ./media/uploads
+mkdir -p ../../media_django/tag_group_icons ../../media_django/uploads
 
 
 #----------------------------------------------------------------------------
@@ -288,7 +288,7 @@ http {
       root $PWD/app_django/frontend;
     }
     location /media {
-      root $PWD/app_django;
+      root $PWD/../../app_django;
     }
     location / {
       proxy_set_header Host \$http_host;
