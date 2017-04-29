@@ -83,19 +83,19 @@ chown -R hotdog:hotdog /home/hotdog
 
 #----------------------------------------------------------------------------
 #packages install
-yes Y | sudo yum install epel-release
-yes Y | sudo yum install gcc
-yes Y | sudo yum install systemd
+yes Y | yum install epel-release
+yes Y | yum install gcc
+yes Y | yum install systemd
 
-yes Y | sudo yum install postgresql-server
-yes Y | sudo yum install postgresql-devel
-yes Y | sudo yum install postgresql-contrib
+yes Y | yum install postgresql-server
+yes Y | yum install postgresql-devel
+yes Y | yum install postgresql-contrib
 
-yes Y | sudo yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-yes Y | sudo yum -y install python35u
-yes Y | sudo yum -y install python35u-pip
+yes Y | yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+yes Y | yum -y install python35u
+yes Y | yum -y install python35u-pip
 
-yes "y" | sudo yum install nginx
+yes Y | yum install nginx
 
 
 #----------------------------------------------------------------------------
@@ -314,5 +314,5 @@ systemctl enable nginx
 
 #----------------------------------------------------------------------------
 #kill 80 process && accept tcp
-iptables -I INPUT 4 -p tcp —dport 80 -j ACCEPT
+iptables -I INPUT 4 -p tcp --dport 80 -j ACCEPT
 fuser -k 80/tcp
