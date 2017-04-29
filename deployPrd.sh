@@ -95,7 +95,7 @@ yes Y | yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 yes Y | yum -y install python35u
 yes Y | yum -y install python35u-pip
 
-yes Y | yum install nginx
+yum -y install nginx
 
 
 #----------------------------------------------------------------------------
