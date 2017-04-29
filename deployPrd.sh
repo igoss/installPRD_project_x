@@ -308,11 +308,8 @@ EOF
 chmod 0777 /etc/nginx/nginx.conf
 sudo usermod -a -G hotdog nginx
 
-service nginx restart
-systemctl enable nginx
-
-
-#----------------------------------------------------------------------------
-#kill 80 process && accept tcp
 iptables -I INPUT 4 -p tcp --dport 80 -j ACCEPT
 fuser -k 80/tcp
+
+service nginx restart
+systemctl enable nginx
