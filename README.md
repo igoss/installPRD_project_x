@@ -1,35 +1,43 @@
 # Использование 
-`$ ./deployPrd.sh <db_username> <db_password> <server/domain__name> <frontend_project> <frontend_branch> <backend_branch>` <br>
-<br>
-**На входе 6 параметров:**
-* Юзер БД
-* Пароль пользователя
-* Имя сервера / домен
-* Название проекта фронтенд
-* Релизная ветка фронтенд части
-* Релизная ветка бекенд части
-Запуск скрипт выполнять в хомяке пользователя с правами администратора **(не root)**.
-<br>
-Выполняется установка и настрока связки: `nginx + unicorns + django`, а так же <br>
-раскатка проекта в текущей директории на серверной тачке с **CentOS 7**. 
-<br>
-Раскатка включает в себя:
-* Установку библиотек окружения
-* Установку PostgreSQL, Python 3.5, Nginx
-* Установку библиотек:
-  * _django==1.9_
-  * _psycopg2==2.7.1_
-  * _django-ckeditor_
-  * _django-resized_
-  * _pillow_
-  * unicorns
-* Раскатку кода project_x
-* Конфигурацию проекта
-  * _settings.py_
-  * _urls.py_
-  * _media_
-* Миграцию БД
-* Создание и запуск демона
-* Конфигурацию nginx
 
-При повторной раскатке, будет выполнена попытка обновления окружения, <br>проект удалится и перевыкатиться повторно.
+`$ ./deployPrd.sh` 
+<br>
+<br>
+**Скрипт вызывать с параметрами:**
+* -u: DB user;
+* -p: User password;
+* -s: Hostname;
+* -f: Frontent project name;
+* -bb: Branch backend;
+* -fb: Branch frontend.
+
+Запуск скрипта делать под **root**-пользователем.
+
+# Что делает?
+
+Скрипт собирает и раскатывает проект для превью / прод среды на тачке с CentOS. 
+<br>
+В процессе работы скрипта, создается окружение django-проекта, выполняется установка
+<br>
+необходимых библиотек. Выполняется настройка демонов gunicorn и nginx, создается база данных.
+<br>
+* **OS configure**:
+  * create user hotdog
+* **OS app:**
+  * python
+  * postgresql 9.6
+  * nginx
+  * gcc
+* **Python venv:**
+  * django==1.9
+  * psycopg2==2.7.1
+  * django-ckeditor
+  * django-resized
+  * pillow
+  * unicorns
+* **Django configure:**
+  * creata app
+  * deploy frontend / backend
+  * migrate database
+
+
