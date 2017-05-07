@@ -62,7 +62,7 @@ fi
 if [ -z ${INSTALL} ]; then
   echo "WARN: Install type is missed!"
   echo "Use default: test install"
-  ${INSTALL}='test'
+  INSTALL='test'
 fi
 
 
@@ -132,7 +132,7 @@ pip install gunicorn
 mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
-if [ ${INSTALL}=='prod' ]; then
+if [ $INSTALL == 'prod' ]; then
   sed -i -e "s/DEBUG = True/DEBUG = False/g" ./configuration/settings.py >> /dev/null
   sed -i -e "s/ALLOWED_HOSTS = []/ALLOWED_HOSTS = [${SERVER_NAME},'www.${SERVER_NAME}']/g" ./configuration/settings.py >> /dev/null
 fi
@@ -268,7 +268,7 @@ touch  /etc/nginx/nginx.conf
 chmod 0777 /etc/nginx/nginx.conf
 cd ../
 
-if [ ${INSTALL}=='prod' ]; then
+if [ $INSTALL == 'prod' ]; then
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
   worker_processes 4;
@@ -339,7 +339,7 @@ if [ ${INSTALL}=='prod' ]; then
     }
   }
 
-  EOF
+EOF
 else
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
@@ -383,7 +383,7 @@ else
     }
   }
 
-  EOF
+EOF
 fi
 chmod 0777 /etc/nginx/nginx.conf
 sudo usermod -a -G hotdog nginx
@@ -391,7 +391,7 @@ sudo usermod -a -G hotdog nginx
 iptables -I INPUT 4 -p tcp --dport 80 -j ACCEPT
 fuser -k 80/tcp
 
-if [ ${INSTALL}=='prod' ]; then
+if [ $INSTALL == 'prod' ]; then
   iptables -I INPUT 4 -p tcp --dport 443 -j ACCEPT
 fi
 
