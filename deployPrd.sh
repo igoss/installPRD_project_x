@@ -132,17 +132,12 @@ pip install gunicorn
 mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
-if [ $INSTALL == 'prod' ]; then
-  sed -i -e "s/DEBUG = True/DEBUG = False/g" ./configuration/settings.py >> /dev/null
-  sed -i -e "s/ALLOWED_HOSTS = []/ALLOWED_HOSTS = [${SERVER_NAME},'www.${SERVER_NAME}']/g" ./configuration/settings.py >> /dev/null
-fi
-
 sed -i -e "s/'UTC'/'Europe\/Moscow'/g" ./configuration/settings.py >> /dev/null
 sed -i -e "s/'en-us'/'ru-ru'/g" ./configuration/settings.py >> /dev/null
 sed '31,40d' ./configuration/settings.py >> /dev/null
 sed '45,59d' ./configuration/settings.py >> /dev/null
 sed '49,57d' ./configuration/settings.py >> /dev/null
-#sed '121' ./configuration/settings.py >> /dev/null
+sed '121d' ./configuration/settings.py >> /dev/null
 rm -rf settings.py-e
 
 cat >> ./configuration/settings.py << EOF
@@ -197,6 +192,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, '../../media')
 CKEDITOR_UPLOAD_PATH = 'uploads/'
 
 EOF
+
+if [ $INSTALL == 'prod' ]; then
+  sed -i -e "s/DEBUG = True/DEBUG = False/g" ./configuration/settings.py >> /dev/null
+  sed '28d' ./configuration/settings.py >> /dev/null
+  cat >> ./configuration/settings.py << EOF
+    ALLOWED_HOSTS = ['${SERVER_NAME}', 'www.${SERVER_NAME}'],
+EOF
+fi
 
 rm -rf ./configuration/urls.py && touch ./configuration/urls.py
 cat >> ./configuration/urls.py << EOF
