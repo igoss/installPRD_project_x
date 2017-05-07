@@ -269,6 +269,9 @@ chmod 0777 /etc/nginx/nginx.conf
 cd ../
 
 if [ $INSTALL == 'prod' ]; then
+
+  mkdir $PWD/ssl_certificate
+
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
   worker_processes 4;
