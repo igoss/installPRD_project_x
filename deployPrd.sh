@@ -266,12 +266,13 @@ rm -rf /etc/nginx/nginx.conf
 touch  /etc/nginx/nginx.conf
 
 chmod 0777 /etc/nginx/nginx.conf
+cd ../
 
 if [ ${INSTALL}=='prod' ]; then
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
   worker_processes 4;
-  error_log $PWD/logs_django/nginx/error.log warn;
+  error_log $PWD/projectX/logs_django/nginx/error.log warn;
   events {
     worker_connections  1024;
   }
@@ -283,7 +284,7 @@ if [ ${INSTALL}=='prod' ]; then
         '"\$request" \$body_bytes_sent "\$http_referer" '
         '"\$http_user_agent" "\$http_x_forwarded_for"';
 
-    access_log $PWD/logs_django/nginx/access.log main;
+    access_log $PWD/projectX/logs_django/nginx/access.log main;
     sendfile on;
     #tcp_nopush     on;
     keepalive_timeout  65;
@@ -307,9 +308,9 @@ if [ ${INSTALL}=='prod' ]; then
       resolver 8.8.8.8 8.8.4.4 valid=300s;
       resolver_timeout 5s;
 
-      ssl_certificate /home/hotdog/ssl_certificate/chain.crt;
-      ssl_certificate_key /home/hotdog/ssl_certificate/private.key;
-      ssl_dhparam /home/hotdog/ssl_certificate/dhparam.pem;
+      ssl_certificate $PWD/ssl_certificate/chain.crt;
+      ssl_certificate_key $PWD/ssl_certificate/private.key;
+      ssl_dhparam $PWD/ssl_certificate/dhparam.pem;
 
       ssl_session_timeout 24h;
       ssl_session_cache shared:SSL:2m;
@@ -321,11 +322,11 @@ if [ ${INSTALL}=='prod' ]; then
       client_max_body_size 20M;
 
       location /static {
-        root $PWD/app_django/frontend;
+        root $PWD/projectX/app_django/frontend;
       }
 
       location /media {
-        root $PWD/../;
+        root $PWD;
       }
 
       location / {
@@ -333,7 +334,7 @@ if [ ${INSTALL}=='prod' ]; then
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_pass http://unix:$PWD/app_django/projectX.sock;
+        proxy_pass http://unix:$PWD/projectX/app_django/projectX.sock;
       }
     }
   }
@@ -343,7 +344,7 @@ else
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
   worker_processes 1;
-  error_log $PWD/logs_django/nginx/error.log warn;
+  error_log $PWD/projectX/logs_django/nginx/error.log warn;
   events {
      worker_connections  1024;
   }
@@ -355,7 +356,7 @@ else
       '"\$request" \$body_bytes_sent "\$http_referer" '
       '"\$http_user_agent" "\$http_x_forwarded_for"';
 
-    access_log $PWD/logs_django/nginx/access.log main;
+    access_log $PWD/projectX/logs_django/nginx/access.log main;
     sendfile on;
     #tcp_nopush     on;
     keepalive_timeout  65;
@@ -367,17 +368,17 @@ else
       server_name ${SERVER_NAME};
       client_max_body_size 20M;
       location /static {
-        root $PWD/app_django/frontend;
+        root $PWD/projectX/app_django/frontend;
       }
       location /media {
-        root $PWD/../;
+        root $PWD;
       }
       location / {
         proxy_set_header Host \$http_host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_pass http://unix:$PWD/app_django/projectX.sock;
+        proxy_pass http://unix:$PWD/projectX/app_django/projectX.sock;
       }
     }
   }
