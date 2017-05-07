@@ -5,12 +5,11 @@
 #After install need collect staticfiles: venv python manage.py collectstatic
 
 #Script options:
-#Use -u  | --db_user        --> database username
-#Use -p  | --db_passwd      --> database username password
 #Use -f  | --frontend       --> git project name (app_django frontend part)
 #Use -bb | --backend_branch --> backend deploy branch
 #Use -fb | --frontend_branch--> frontend deploy branch
 #Use -s  | --server         --> server hostname
+#use -i  | --install        --> install type (prod; test)
 
 #----------------------------------------------------------------------------
 #option parser
@@ -19,12 +18,6 @@ do
 key="$1"
 
 case $key in
-    -u|--db_user)
-    DB_USERNAME="$2"
-    shift ;;
-    -p|--db_passwd)
-    DB_PASSWORD="$2"
-    shift ;;
     -f|--frontend)
     FRONTEND="$2"
     shift ;;
@@ -37,6 +30,9 @@ case $key in
     -s|--server)
     SERVER_NAME="$2"
     shift ;;
+    -i|--install)
+    INSTALL="$2"
+    shift ;;
 esac
 shift
 done
@@ -44,11 +40,6 @@ done
 
 #----------------------------------------------------------------------------
 #option validator
-if [ -z ${DB_USERNAME} ] && [ -z ${DB_PASSWORD} ]; then
-  echo "ERROR: DB user and user passwd are missed!"
-  echo "--> use -u | -p options."
-  exit
-fi
 
 if [ -z ${FRONTEND_BRANCH} ] && [ -z ${BACKEND_BRANCH} ]; then
   echo "ERROR: frontend or backend release branch is missed!"
@@ -66,6 +57,12 @@ if [ -z ${SERVER_NAME} ]; then
   echo "ERROR: Server hostname is missed!"
   echo "--> use -s option."
   exit
+fi
+
+if [ -z ${INSTALL} ]; then
+  echo "WARN: Install type is missed!"
+  echo "Use default: test install"
+  ${INSTALL}='test'
 fi
 
 
@@ -109,8 +106,8 @@ sudo systemctl restart postgresql
 sudo systemctl enable postgresql
 
 sudo -u postgres psql postgres -c "CREATE DATABASE project_x;"
-sudo -u postgres psql postgres -c "CREATE USER ${DB_USERNAME} WITH PASSWORD '${DB_PASSWORD}';"
-sudo -u postgres psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE project_x TO ${DB_USERNAME};"
+sudo -u postgres psql postgres -c "CREATE USER ${FRONTEND} WITH PASSWORD 'Y6Ej5C76mxXwxA8v';"
+sudo -u postgres psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE project_x TO ${FRONTEND};"
 
 
 #----------------------------------------------------------------------------
@@ -135,10 +132,17 @@ pip install gunicorn
 mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
+if [ ${INSTALL}=='prod' ]; then
+  sed -i -e "s/DEBUG = True/DEBUG = False/g" ./configuration/settings.py >> /dev/null
+  sed -i -e "s/ALLOWED_HOSTS = []/ALLOWED_HOSTS = [${SERVER_NAME},'www.${SERVER_NAME}']/g" ./configuration/settings.py >> /dev/null
+fi
+
 sed -i -e "s/'UTC'/'Europe\/Moscow'/g" ./configuration/settings.py >> /dev/null
+sed -i -e "s/'en-us'/'ru-ru'/g" ./configuration/settings.py >> /dev/null
 sed '31,40d' ./configuration/settings.py >> /dev/null
 sed '45,59d' ./configuration/settings.py >> /dev/null
 sed '49,57d' ./configuration/settings.py >> /dev/null
+#sed '121' ./configuration/settings.py >> /dev/null
 rm -rf settings.py-e
 
 cat >> ./configuration/settings.py << EOF
@@ -159,8 +163,8 @@ DATABASES = {
   'default': {
     'ENGINE': 'django.db.backends.postgresql_psycopg2',
     'NAME': 'project_x',
-    'USER': '${DB_USERNAME}',
-    'PASSWORD': '${DB_PASSWORD}',
+    'USER': '${FRONTEND}',
+    'PASSWORD': 'Y6Ej5C76mxXwxA8v',
     'HOST': 'localhost',
     'PORT': '',
   }
@@ -262,54 +266,133 @@ rm -rf /etc/nginx/nginx.conf
 touch  /etc/nginx/nginx.conf
 
 chmod 0777 /etc/nginx/nginx.conf
-cat >> /etc/nginx/nginx.conf << EOF
-user root;
-worker_processes 1;
-error_log $PWD/logs_django/nginx/error.log warn;
-events {
-    worker_connections  1024;
-}
-http {
-  include       /etc/nginx/mime.types;
-  default_type  application/octet-stream;
 
-  log_format   main '\$remote_addr - \$remote_user [\$time_local] \$status '
+if [ ${INSTALL}=='prod' ]; then
+  cat >> /etc/nginx/nginx.conf << EOF
+  user root;
+  worker_processes 4;
+  error_log $PWD/logs_django/nginx/error.log warn;
+  events {
+    worker_connections  1024;
+  }
+  http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format   main '\$remote_addr - \$remote_user [\$time_local] \$status '
+        '"\$request" \$body_bytes_sent "\$http_referer" '
+        '"\$http_user_agent" "\$http_x_forwarded_for"';
+
+    access_log $PWD/logs_django/nginx/access.log main;
+    sendfile on;
+    #tcp_nopush     on;
+    keepalive_timeout  65;
+    #gzip  on;
+    include /etc/nginx/conf.d/*.conf;
+
+    server{
+      server_name ${SERVER_NAME},www.${SERVER_NAME};
+      listen 80;
+      return 301 https://${SERVER_NAME}\$request_uri;
+    }
+
+    server{
+      listen 443 ssl http2;
+      server_name ${SERVER_NAME};
+
+      ssl on;
+      ssl_stapling on;
+      ssl_prefer_server_ciphers on;
+
+      resolver 8.8.8.8 8.8.4.4 valid=300s;
+      resolver_timeout 5s;
+
+      ssl_certificate /home/hotdog/ssl_certificate/chain.crt;
+      ssl_certificate_key /home/hotdog/ssl_certificate/private.key;
+      ssl_dhparam /home/hotdog/ssl_certificate/dhparam.pem;
+
+      ssl_session_timeout 24h;
+      ssl_session_cache shared:SSL:2m;
+      ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+      ssl_ciphers kEECDH+AES128:kEECDH:kEDH:-3DES:kRSA+AES128:kEDH+3DES:DES-CBC3-SHA:!RC4:!aNULL:!eNULL:!MD5:!EXPORT:!LOW:!SEED:!CAMELLIA:!IDEA:!PSK:!SRP:!SSLv2;
+      add_header Content-Security-Policy-Report-Only "default-src https:; script-src https: 'unsafe-eval' 'unsafe-inline'; style-src https: 'unsafe-inline'; img-src https: data:; font-src https: data:; report-uri /csp-report";
+      add_header Strict-Transport-Security "max-age=31536000;";
+
+      client_max_body_size 20M;
+
+      location /static {
+        root $PWD/app_django/frontend;
+      }
+
+      location /media {
+        root $PWD/../;
+      }
+
+      location / {
+        proxy_set_header Host \$http_host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_pass http://unix:$PWD/app_django/projectX.sock;
+      }
+    }
+  }
+
+  EOF
+else
+  cat >> /etc/nginx/nginx.conf << EOF
+  user root;
+  worker_processes 1;
+  error_log $PWD/logs_django/nginx/error.log warn;
+  events {
+     worker_connections  1024;
+  }
+  http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format   main '\$remote_addr - \$remote_user [\$time_local] \$status '
       '"\$request" \$body_bytes_sent "\$http_referer" '
       '"\$http_user_agent" "\$http_x_forwarded_for"';
 
-  access_log $PWD/logs_django/nginx/access.log main;
-  sendfile on;
-  #tcp_nopush     on;
-  keepalive_timeout  65;
-  #gzip  on;
-  include /etc/nginx/conf.d/*.conf;
+    access_log $PWD/logs_django/nginx/access.log main;
+    sendfile on;
+    #tcp_nopush     on;
+    keepalive_timeout  65;
+    #gzip  on;
+    include /etc/nginx/conf.d/*.conf;
 
-  server{
-    listen 80;
-    server_name ${SERVER_NAME};
-    client_max_body_size 20M;
-    location /static {
-      root $PWD/app_django/frontend;
-    }
-    location /media {
-      root $PWD/../;
-    }
-    location / {
-      proxy_set_header Host \$http_host;
-      proxy_set_header X-Real-IP \$remote_addr;
-      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Proto \$scheme;
-      proxy_pass http://unix:$PWD/app_django/projectX.sock;
+    server{
+      listen 80;
+      server_name ${SERVER_NAME};
+      client_max_body_size 20M;
+      location /static {
+        root $PWD/app_django/frontend;
+      }
+      location /media {
+        root $PWD/../;
+      }
+      location / {
+        proxy_set_header Host \$http_host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_pass http://unix:$PWD/app_django/projectX.sock;
+      }
     }
   }
-}
 
-EOF
+  EOF
+fi
 chmod 0777 /etc/nginx/nginx.conf
 sudo usermod -a -G hotdog nginx
 
 iptables -I INPUT 4 -p tcp --dport 80 -j ACCEPT
 fuser -k 80/tcp
+
+if [ ${INSTALL}=='prod' ]; then
+  iptables -I INPUT 4 -p tcp --dport 443 -j ACCEPT
+fi
 
 service nginx restart
 systemctl enable nginx
