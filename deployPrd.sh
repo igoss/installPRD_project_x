@@ -197,7 +197,7 @@ if [ $INSTALL == 'prod' ]; then
   sed -i -e "s/DEBUG = True/DEBUG = False/g" ./configuration/settings.py >> /dev/null
   sed '28d' ./configuration/settings.py >> /dev/null
   cat >> ./configuration/settings.py << EOF
-    ALLOWED_HOSTS = ['${SERVER_NAME}', 'www.${SERVER_NAME}'],
+ALLOWED_HOSTS = ['${SERVER_NAME}', 'www.${SERVER_NAME}']
 EOF
 fi
 
