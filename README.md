@@ -1,13 +1,28 @@
 # Использование 
 
-`$ ./deployPrd.sh` 
+Перед 1ой установкой: 
+<br>
+`$ yum install git`
+<br>
+`$ ssh-keygen` и `$ cat ~/.ssh/id_rsa.pub` для генерации rsa-ключа.
+<br>
+<br>
+Скрипт выполняет установку окружения и проекта для **Preview** и **Production**.
+<br>
+Для корректной работы в **production** необходимо добавить SSL-сертификаты:
+<br>
+- Основная цепочка сертификатов (private.crt и bundle.crt)
+- Закрытый ключ (private.key)
+- dhparam.pem
+
+Для генерации **dhparam.pem**:
+`openssl dhparam -out /path_to_key/dhparam.pem 4096`
 <br>
 <br>
 **Скрипт вызывать с параметрами:**
-* -u: DB user;
-* -p: User password;
 * -s: Hostname;
 * -f: Frontent project name;
+* -i: Install type (test | prod)
 * -bb: Branch backend;
 * -fb: Branch frontend.
 
@@ -40,4 +55,15 @@
   * deploy frontend / backend
   * migrate database
 
+Для **Preview** версии подключение осуществляется через http, Debug = True
+<br>
+Для **Production** версии подключение выполняется через https, Debug = False + ALLOED_HOSTS.
+<br>
+Проверка демонов:
+- systemctl status gunicorn
+- systemctl status nginx
+
+Проверка SSL:
+- https://www.ssllabs.com/ssltest/analyze.html (Result: A+)
+- `$ openssl s_client -connect hostname:443 -state -debug`
 
