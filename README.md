@@ -58,12 +58,12 @@
 Для **Preview** версии подключение осуществляется через http, Debug = True
 <br>
 Для **Production** версии подключение выполняется через https, Debug = False + ALLOED_HOSTS.
-<br>
-Проверка демонов:
+<br><br>
+**Проверка демонов:**
 - systemctl status gunicorn
 - systemctl status nginx
 
-Проверка SSL:
+**Проверка SSL:**
 - https://www.ssllabs.com/ssltest/analyze.html (Result: A+)
 - `$ openssl s_client -connect hostname:443 -state -debug`
 
