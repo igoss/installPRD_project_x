@@ -169,7 +169,7 @@ DATABASES = {
 TEMPLATES = [
 {
   'BACKEND': 'django.template.backends.django.DjangoTemplates',
-  'DIRS': [os.path.join(BASE_DIR, '${FRONTEND}/templates/')],
+  'DIRS': [os.path.join(BASE_DIR, 'frontend/templates/')],
   'APP_DIRS': True,
   'OPTIONS': {
     'context_processors': [
@@ -185,7 +185,7 @@ TEMPLATES = [
 DATE_FORMAT = 'd E Y в G:i'
 
 STATIC_URL  = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, '${FRONTEND}/static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static')
 
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, '../../media')
@@ -226,6 +226,7 @@ mkdir ./backend/migrations && touch ./backend/migrations/__init__.py
 
 git clone -b ${FRONTEND_BRANCH} git@github.com:igoss/${FRONTEND}.git
 rm -rf ./${FRONTEND}/.git ./${FRONTEND}/README.md ./${FRONTEND}/.gitignore
+mv ./${FRONTEND} ./frontend
 
 python manage.py makemigrations
 python manage.py migrate
