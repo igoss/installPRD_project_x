@@ -132,12 +132,15 @@ pip install gunicorn
 mkdir $PWD/app_django
 django-admin startproject configuration $PWD/app_django && cd "$_"
 
+## NEED FIX
+# Remove err: database connection isn't set to UTC
+sed -i -e "s/USE_TZ = True/USE_TZ = False/g" ./configuration/settings.py >> /dev/null
+##
 sed -i -e "s/'UTC'/'Europe\/Moscow'/g" ./configuration/settings.py >> /dev/null
 sed -i -e "s/'en-us'/'ru-ru'/g" ./configuration/settings.py >> /dev/null
-sed '31,40d' ./configuration/settings.py >> /dev/null
-sed '45,59d' ./configuration/settings.py >> /dev/null
-sed '49,57d' ./configuration/settings.py >> /dev/null
-sed '121d' ./configuration/settings.py >> /dev/null
+sed -i -e '55,70d' ./configuration/settings.py >> /dev/null
+sed -i -e '57,68d' ./configuration/settings.py >> /dev/null
+sed -i -e '93d' ./configuration/settings.py >> /dev/null
 rm -rf settings.py-e
 
 cat >> ./configuration/settings.py << EOF
@@ -195,7 +198,8 @@ EOF
 
 if [ $INSTALL == 'prod' ]; then
   sed -i -e "s/DEBUG = True/DEBUG = False/g" ./configuration/settings.py >> /dev/null
-  sed '28d' ./configuration/settings.py >> /dev/null
+  sed -i -e '28d' ./configuration/settings.py >> /dev/null
+  rm -rf settings.py-e
   cat >> ./configuration/settings.py << EOF
 ALLOWED_HOSTS = ['${SERVER_NAME}', 'www.${SERVER_NAME}']
 EOF
