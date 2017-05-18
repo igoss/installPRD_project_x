@@ -330,7 +330,7 @@ if [ $INSTALL == 'prod' ]; then
       add_header Content-Security-Policy-Report-Only "default-src https:; script-src https: 'unsafe-eval' 'unsafe-inline'; style-src https: 'unsafe-inline'; img-src https: data:; font-src https: data:; report-uri /csp-report";
       add_header Strict-Transport-Security "max-age=31536000;";
 
-      client_max_body_size 20M;
+      client_max_body_size 10M;
 
       location /static {
         root $PWD/projectX/app_django/frontend;
