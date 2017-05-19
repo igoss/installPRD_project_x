@@ -193,7 +193,30 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'frontend/static')
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, '../../media')
 CKEDITOR_UPLOAD_PATH = 'uploads/'
-
+CKEDITOR_CONFIGS = {
+  "default": {
+    "removePlugins": "stylesheetparser",
+    'allowedContent': True,
+    'width': '100%',
+    'toolbar_Full': [
+      ['Styles', 'Format', 'Bold', 'Italic', 'Underline', 'Strike',
+       'Subscript', 'Superscript', '-', 'RemoveFormat'],
+      ['Image', 'Flash', 'Table', 'HorizontalRule'],
+      ['TextColor', 'BGColor'],
+      ['Smiley', 'sourcearea', 'SpecialChar'],
+      ['Link', 'Unlink', 'Anchor'],
+      ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-',
+       'Blockquote', 'CreateDiv', '-', 'JustifyLeft', 'JustifyCenter',
+       'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl'],
+      ['Templates'],
+      ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-',
+       'Undo', 'Redo'],
+      ['Find', 'Replace', '-', 'Scayt'],
+      ['ShowBlocks'],
+      ['Source', 'Templates'],
+    ],
+  }
+}
 EOF
 
 if [ $INSTALL == 'prod' ]; then
