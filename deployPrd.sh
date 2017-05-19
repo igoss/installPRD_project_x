@@ -217,6 +217,7 @@ CKEDITOR_CONFIGS = {
     ],
   }
 }
+
 EOF
 
 if [ $INSTALL == 'prod' ]; then
