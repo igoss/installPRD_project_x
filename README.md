@@ -11,7 +11,7 @@
 <br>
 Для корректной работы в **production** необходимо добавить SSL-сертификаты:
 <br>
-- Основная цепочка сертификатов (private.crt и bundle.crt)
+- Основная цепочка сертификатов (private.crt и bundle.crt)=chain.crt
 - Закрытый ключ (private.key)
 - dhparam.pem
 
@@ -67,3 +67,8 @@
 - https://www.ssllabs.com/ssltest/analyze.html (Result: A+)
 - `$ openssl s_client -connect hostname:443 -state -debug`
 
+**После переустановки ОС:** 
+- yum install git
+- ssh-keygen
+- cat ~/.ssh/id_rsa.pub 
+- скопировать ключ и добавить его в репозиторий github
