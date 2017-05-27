@@ -68,6 +68,7 @@
 - `$ openssl s_client -connect hostname:443 -state -debug`
 
 **После переустановки ОС:** 
+- ssh-keygen -R `host` (на докальной машине)
 - yum install git
 - ssh-keygen
 - cat ~/.ssh/id_rsa.pub 
