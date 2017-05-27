@@ -68,12 +68,12 @@
 - `$ openssl s_client -connect hostname:443 -state -debug`
 
 **После переустановки ОС:** 
-- ssh-keygen -R <host> (на локальной машине)
+- ssh-keygen -R host (на локальной машине)
 - yum install git
 - ssh-keygen
 - cat ~/.ssh/id_rsa.pub 
 - скопировать ключ и добавить его в репозиторий github
 
 **Отводим релиз:**
-- git checkout -b <branch>
-- git push <remote-name> <branch-name>
+- git checkout -b branch
+- git push remote-name branch-name
