@@ -75,5 +75,5 @@
 - скопировать ключ и добавить его в репозиторий github
 
 **Отводим релиз:**
-- git checkout -b branch
-- git push remote-name branch-name
+- git checkout -b branch-name
+- git push origin branch-name
