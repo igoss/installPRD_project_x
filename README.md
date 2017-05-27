@@ -14,6 +14,7 @@
 - Основная цепочка сертификатов (private.crt и bundle.crt)=chain.crt
 - Закрытый ключ (private.key)
 - dhparam.pem
+- systemctl start nginx
 
 Для генерации **dhparam.pem**:
 `openssl dhparam -out /path_to_key/dhparam.pem 4096`
