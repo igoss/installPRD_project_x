@@ -361,7 +361,11 @@ if [ $INSTALL == 'prod' ]; then
       add_header Strict-Transport-Security "max-age=31536000;";
 
       client_max_body_size 10M;
-
+      
+      location /robots.txt {
+        alias $PWD/projectX/app_django/frontend/static/robots.txt;
+      }
+      
       location /static {
         root $PWD/projectX/app_django/frontend;
       }
