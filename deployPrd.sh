@@ -365,6 +365,10 @@ if [ $INSTALL == 'prod' ]; then
       location /robots.txt {
         alias $PWD/projectX/app_django/frontend/static/robots.txt;
       }
+
+      location /sitemap.xml {
+        alias $PWD/projectX/app_django/frontend/static/sitemap.xml;
+      }
       
       location /static {
         root $PWD/projectX/app_django/frontend;
