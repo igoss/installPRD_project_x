@@ -306,7 +306,7 @@ if [ $INSTALL == 'prod' ]; then
 
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
-  worker_processes 1;
+  worker_processes 2;
   error_log $PWD/projectX/logs_django/nginx/error.log warn;
   events {
     worker_connections  1024;
@@ -411,7 +411,7 @@ EOF
 else
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
-  worker_processes 1;
+  worker_processes 2;
   error_log $PWD/projectX/logs_django/nginx/error.log warn;
   events {
      worker_connections  1024;
