@@ -360,6 +360,24 @@ if [ $INSTALL == 'prod' ]; then
       ssl_ciphers kEECDH+AES128:kEECDH:kEDH:-3DES:kRSA+AES128:kEDH+3DES:DES-CBC3-SHA:!RC4:!aNULL:!eNULL:!MD5:!EXPORT:!LOW:!SEED:!CAMELLIA:!IDEA:!PSK:!SRP:!SSLv2;
       add_header Content-Security-Policy-Report-Only "default-src https:; script-src https: 'unsafe-eval' 'unsafe-inline'; style-src https: 'unsafe-inline'; img-src https: data:; font-src https: data:; report-uri /csp-report";
       add_header Strict-Transport-Security "max-age=31536000;";
+      
+      gzip on;
+      gzip_disable "msie6";
+      gzip_comp_level 1;
+      gzip_vary on;
+      gzip_proxied any;
+      gzip_buffers 16 8k;
+      gzip_http_version 1.1;
+      gzip_static on;
+      gzip_types 
+        text/plain 
+        text/css 
+        application/json 
+        application/x-javascript 
+        text/xml application/xml 
+        application/xml+rss 
+        text/javascript 
+        application/javascript;
 
       client_max_body_size 10M;
       
@@ -424,6 +442,24 @@ else
       listen 80;
       server_name ${SERVER_NAME};
       client_max_body_size 10M;
+      
+      gzip on;
+      gzip_disable "msie6";
+      gzip_comp_level 1;
+      gzip_vary on;
+      gzip_proxied any;
+      gzip_buffers 16 8k;
+      gzip_http_version 1.1;
+      gzip_static on;
+      gzip_types 
+        text/plain 
+        text/css 
+        application/json 
+        application/x-javascript 
+        text/xml application/xml 
+        application/xml+rss 
+        text/javascript 
+        application/javascript;
       
       location /robots.txt {
         alias $PWD/projectX/app_django/frontend/static/robots.txt;
