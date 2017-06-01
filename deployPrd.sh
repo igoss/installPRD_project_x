@@ -306,7 +306,7 @@ if [ $INSTALL == 'prod' ]; then
 
   cat >> /etc/nginx/nginx.conf << EOF
   user root;
-  worker_processes 4;
+  worker_processes 1;
   error_log $PWD/projectX/logs_django/nginx/error.log warn;
   events {
     worker_connections  1024;
@@ -413,15 +413,31 @@ else
     include /etc/nginx/conf.d/*.conf;
 
     server{
+      server_name ${SERVER_NAME},www.${SERVER_NAME};
+      listen 80;
+      return 301 https://${SERVER_NAME}\$request_uri;
+    }
+
+    server{
       listen 80;
       server_name ${SERVER_NAME};
-      client_max_body_size 20M;
+      client_max_body_size 10M;
+      
+      location /robots.txt {
+        alias $PWD/projectX/app_django/frontend/static/robots.txt;
+      }
+
+      location /sitemap.xml {
+        alias $PWD/projectX/app_django/frontend/static/sitemap.xml;
+      }
       location /static {
         root $PWD/projectX/app_django/frontend;
       }
+      
       location /media {
         root $PWD;
       }
+      
       location / {
         proxy_set_header Host \$http_host;
         proxy_set_header X-Real-IP \$remote_addr;
