@@ -328,7 +328,7 @@ if [ $INSTALL == 'prod' ]; then
     include /etc/nginx/conf.d/*.conf;
 
     server{
-      server_name ${SERVER_NAME},www.${SERVER_NAME};
+      server_name ${SERVER_NAME}, www.${SERVER_NAME};
       listen 80;
       return 301 https://${SERVER_NAME}\$request_uri;
     }
@@ -415,7 +415,7 @@ else
     include /etc/nginx/conf.d/*.conf;
 
     server{
-      server_name ${SERVER_NAME},www.${SERVER_NAME};
+      server_name ${SERVER_NAME}, www.${SERVER_NAME};
       listen 80;
       return 301 https://${SERVER_NAME}\$request_uri;
     }
