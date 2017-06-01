@@ -312,6 +312,7 @@ if [ $INSTALL == 'prod' ]; then
     worker_connections  1024;
   }
   http {
+    server_names_hash_bucket_size 64;
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
 
@@ -398,6 +399,7 @@ else
      worker_connections  1024;
   }
   http {
+    server_names_hash_bucket_size 64;
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
 
