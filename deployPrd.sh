@@ -489,7 +489,7 @@ else
 EOF
 fi
 
-find $PWD/projectX/app_django/frontend -name \*.* -exec gzip -9 {} \;
+find $PWD/projectX/app_django/frontend/static -name \*.* -exec gzip -9 {} \;
 
 chmod 0777 /etc/nginx/nginx.conf
 sudo usermod -a -G hotdog nginx
