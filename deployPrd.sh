@@ -81,6 +81,8 @@ chown -R hotdog:hotdog /home/hotdog
 #----------------------------------------------------------------------------
 #packages install
 yes Y | yum install epel-release
+yes Y | yum update
+
 yes Y | yum install gcc
 yes Y | yum install systemd
 
