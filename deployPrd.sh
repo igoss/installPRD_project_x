@@ -261,7 +261,7 @@ mv ./${FRONTEND} ./frontend
 
 if [ $INSTALL == 'prod' ]; then
   sed -i -e "s/name='robots'/name='yandex-verification'/g" ./frontend/templates/base.html >> /dev/null
-  sed -i -e "s/content='noindex,follow'/content='2467425f300734db'/g" ./frontend/templates/base.html >> /dev/null
+  sed -i -e "s/content='noindex,nofollow'/content='2467425f300734db'/g" ./frontend/templates/base.html >> /dev/null
 fi
 
 if [ $INSTALL == 'test' ] || [ $INSTALL == 'nossl' ]; then
