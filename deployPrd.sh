@@ -264,10 +264,6 @@ if [ $INSTALL == 'prod' ]; then
   sed -i -e "s/content='noindex,follow'/content='2467425f300734db'/g" .frontend/template/base.html >> /dev/null
 fi
 
-if [ ! $INSTALL == 'prod' ]; then
-  sed -i -e "s/<head>/<head><meta name="robots" content="noindex,follow" \/>/g" .frontend/template/base.html >> /dev/null
-fi
-
 python manage.py makemigrations
 python manage.py migrate
 
