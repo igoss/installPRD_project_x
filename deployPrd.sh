@@ -260,7 +260,8 @@ rm -rf ./${FRONTEND}/.git ./${FRONTEND}/README.md ./${FRONTEND}/.gitignore
 mv ./${FRONTEND} ./frontend
 
 if [ $INSTALL == 'prod' ]; then
-  sed -i -e "s/<head>/<head><meta name="yandex-verification" content="2467425f300734db" \/>/g" .frontend/template/base.html >> /dev/null
+  sed -i -e "s/name='robots'/name='yandex-verification'/g" .frontend/template/base.html >> /dev/null
+  sed -i -e "s/content='noindex,follow'/content='2467425f300734db'/g" .frontend/template/base.html >> /dev/null
 fi
 
 if [ ! $INSTALL == 'prod' ]; then
