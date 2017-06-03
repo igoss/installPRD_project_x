@@ -270,7 +270,7 @@ if [ $INSTALL == 'test' ] || [ $INSTALL == 'nossl' ]; then
   cat >> ./frontend/static/robots.txt << EOF
   User-agent: *
   Disallow: /
-  EOF
+EOF
 fi
 
 python manage.py makemigrations
