@@ -220,6 +220,8 @@ CKEDITOR_CONFIGS = {
   }
 }
 
+CACHE_BACKEND = 'memcached://unix:/tmp/memcached.sock'
+
 EOF
 
 if [ $INSTALL == 'prod' ]; then
