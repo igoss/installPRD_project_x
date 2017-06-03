@@ -95,7 +95,7 @@ yes Y | yum -y install python35u
 yes Y | yum -y install python35u-pip
 
 yum -y install nginx
-
+yum -y install memcached
 
 #----------------------------------------------------------------------------
 #configure postgreSQL
@@ -127,7 +127,7 @@ pip install django-resized
 pip install Pillow
 pip install psycopg2
 pip install gunicorn
-
+pip install python-memcache
 
 #----------------------------------------------------------------------------
 #configure project
