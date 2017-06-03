@@ -340,7 +340,7 @@ if [ $INSTALL == 'prod' ]; then
       listen 443 ssl http2;
       server_name ${SERVER_NAME}, www.${SERVER_NAME};
       if (\$host ~* www\.(.*)) {
-        set $host_without_www $1;
+        set \$host_without_www \$1;
         rewrite ^(.*)\$ http://\$host_without_www\$1 permanent;
       }
 
