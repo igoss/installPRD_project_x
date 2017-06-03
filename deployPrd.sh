@@ -9,7 +9,7 @@
 #Use -bb | --backend_branch --> backend deploy branch
 #Use -fb | --frontend_branch--> frontend deploy branch
 #Use -s  | --server         --> server hostname
-#use -i  | --install        --> install type (prod; test)
+#use -i  | --install        --> install type (prod; test; nossl)
 
 #----------------------------------------------------------------------------
 #option parser
@@ -62,7 +62,7 @@ fi
 if [ -z ${INSTALL} ]; then
   echo "WARN: Install type is missed!"
   echo "Use default: test install"
-  INSTALL='test'
+  INSTALL='nossl'
 fi
 
 
@@ -259,6 +259,14 @@ git clone -b ${FRONTEND_BRANCH} git@github.com:igoss/${FRONTEND}.git
 rm -rf ./${FRONTEND}/.git ./${FRONTEND}/README.md ./${FRONTEND}/.gitignore
 mv ./${FRONTEND} ./frontend
 
+if [ $INSTALL == 'prod' ]; then
+  sed -i -e "s/<head>/<head><meta name="yandex-verification" content="2467425f300734db" \/>/g" .frontend/template/base.html >> /dev/null
+fi
+
+if [ ! $INSTALL == 'prod' ]; then
+  sed -i -e "s/<head>/<head><meta name="robots" content="noindex,follow" \/>/g" .frontend/template/base.html >> /dev/null
+fi
+
 python manage.py makemigrations
 python manage.py migrate
 
@@ -303,7 +311,7 @@ touch  /etc/nginx/nginx.conf
 chmod 0777 /etc/nginx/nginx.conf
 cd ../
 
-if [ $INSTALL == 'prod' ]; then
+if [ $INSTALL == 'prod' ] || [ $INSTALL == 'test' ]; then
 
   mkdir $PWD/ssl_certificate
 
@@ -361,7 +369,7 @@ if [ $INSTALL == 'prod' ]; then
       ssl_ciphers kEECDH+AES128:kEECDH:kEDH:-3DES:kRSA+AES128:kEDH+3DES:DES-CBC3-SHA:!RC4:!aNULL:!eNULL:!MD5:!EXPORT:!LOW:!SEED:!CAMELLIA:!IDEA:!PSK:!SRP:!SSLv2;
       add_header Content-Security-Policy-Report-Only "default-src https:; script-src https: 'unsafe-eval' 'unsafe-inline'; style-src https: 'unsafe-inline'; img-src https: data:; font-src https: data:; report-uri /csp-report";
       add_header Strict-Transport-Security "max-age=31536000;";
-      
+
       gzip on;
       gzip_disable "msie6";
       gzip_comp_level 1;
@@ -370,18 +378,18 @@ if [ $INSTALL == 'prod' ]; then
       gzip_buffers 16 8k;
       gzip_http_version 1.1;
       gzip_static on;
-      gzip_types 
-        text/plain 
-        text/css 
-        application/json 
-        application/x-javascript 
-        text/xml application/xml 
-        application/xml+rss 
-        text/javascript 
+      gzip_types
+        text/plain
+        text/css
+        application/json
+        application/x-javascript
+        text/xml application/xml
+        application/xml+rss
+        text/javascript
         application/javascript;
 
       client_max_body_size 10M;
-      
+
       location /robots.txt {
         alias $PWD/projectX/app_django/frontend/static/robots.txt;
       }
@@ -389,7 +397,7 @@ if [ $INSTALL == 'prod' ]; then
       location /sitemap.xml {
         alias $PWD/projectX/app_django/frontend/static/sitemap.xml;
       }
-      
+
       location /static {
         root $PWD/projectX/app_django/frontend;
       }
@@ -443,7 +451,7 @@ else
       listen 80;
       server_name ${SERVER_NAME};
       client_max_body_size 10M;
-      
+
       gzip on;
       gzip_disable "msie6";
       gzip_comp_level 1;
@@ -452,16 +460,16 @@ else
       gzip_buffers 16 8k;
       gzip_http_version 1.1;
       gzip_static on;
-      gzip_types 
-        text/plain 
-        text/css 
-        application/json 
-        application/x-javascript 
-        text/xml application/xml 
-        application/xml+rss 
-        text/javascript 
+      gzip_types
+        text/plain
+        text/css
+        application/json
+        application/x-javascript
+        text/xml application/xml
+        application/xml+rss
+        text/javascript
         application/javascript;
-      
+
       location /robots.txt {
         alias $PWD/projectX/app_django/frontend/static/robots.txt;
       }
@@ -472,11 +480,11 @@ else
       location /static {
         root $PWD/projectX/app_django/frontend;
       }
-      
+
       location /media {
         root $PWD;
       }
-      
+
       location / {
         proxy_set_header Host \$http_host;
         proxy_set_header X-Real-IP \$remote_addr;
