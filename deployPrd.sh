@@ -337,14 +337,12 @@ if [ $INSTALL == 'prod' ]; then
     }
 
     server{
-      server_name www.${SERVER_NAME};
       listen 443 ssl http2;
-      return 301 https://${SERVER_NAME}\$request_uri;
-    }
-
-    server{
-      listen 443 ssl http2;
-      server_name ${SERVER_NAME};
+      server_name ${SERVER_NAME}, www.${SERVER_NAME};
+      if ($host ~* www\.(.*)) {
+        set $host_without_www $1;
+        rewrite ^(.*)$ http://$host_without_www$1 permanent;
+      }
 
       ssl on;
       ssl_stapling on;
