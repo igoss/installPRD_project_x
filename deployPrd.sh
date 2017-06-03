@@ -264,6 +264,15 @@ if [ $INSTALL == 'prod' ]; then
   sed -i -e "s/content='noindex,follow'/content='2467425f300734db'/g" ./frontend/templates/base.html >> /dev/null
 fi
 
+if [ $INSTALL == 'test' ] || [ $INSTALL == 'nossl' ]; then
+  rm -rf ./frontend/static/robots.txt
+  touch ./frontend/static/robots.txt
+  cat >> ./frontend/static/robots.txt << EOF
+  User-agent: *
+  Disallow: /
+  EOF
+fi
+
 python manage.py makemigrations
 python manage.py migrate
 
