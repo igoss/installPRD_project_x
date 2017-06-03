@@ -127,7 +127,7 @@ pip install django-resized
 pip install Pillow
 pip install psycopg2
 pip install gunicorn
-pip install python-memcache
+pip3 install python3-memcached
 
 #----------------------------------------------------------------------------
 #configure project
