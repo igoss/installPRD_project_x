@@ -220,7 +220,8 @@ CKEDITOR_CONFIGS = {
   }
 }
 
-CACHE_BACKEND = 'memcached://unix:/tmp/memcached.sock'
+CACHE_BACKEND = '{}{}{}'.format('memcached://unix:', BASE_DIR, '/memcached.sock')
+#CACHE_BACKEND = 'memcached://unix:/tmp/memcached.sock'
 
 EOF
 
