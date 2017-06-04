@@ -155,6 +155,7 @@ INSTALLED_APPS = [
   'backend',
   'ckeditor',
   'ckeditor_uploader',
+  'django.contrib.sitemaps',
 ]
 
 
