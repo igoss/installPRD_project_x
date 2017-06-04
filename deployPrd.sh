@@ -244,10 +244,17 @@ cat >> ./configuration/urls.py << EOF
 from django.contrib import admin
 from django.conf.urls import url, include
 
+from django.conf import settings
+from django.conf.urls.static import static
+
+from backend.services.sitemap.sitemap import PostSitemap, HomeSitemap, FlowSitemap, GroupSitemap
+sitemaps = {'articles': PostSitemap, 'home': HomeSitemap, 'flow': FlowSitemap, 'group': GroupSitemap}
+
 urlpatterns = [
   url(r"^admin/", admin.site.urls),
   url(r"^ckeditor/", include("ckeditor_uploader.urls")),
   url(r"", include("backend.urls")),
+  url(r'^sitemap.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps})
 ]
 
 EOF
