@@ -146,6 +146,12 @@ rm -rf settings.py-e
 
 cat >> ./configuration/settings.py << EOF
 INSTALLED_APPS = [
+  'django.contrib.admin',
+  'django.contrib.auth',
+  'django.contrib.contenttypes',
+  'django.contrib.sessions',
+  'django.contrib.messages',
+  'django.contrib.staticfiles',
   'backend',
   'ckeditor',
   'ckeditor_uploader',
