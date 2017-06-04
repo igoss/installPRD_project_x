@@ -244,9 +244,6 @@ cat >> ./configuration/urls.py << EOF
 from django.contrib import admin
 from django.conf.urls import url, include
 
-from django.conf import settings
-from django.conf.urls.static import static
-
 from backend.services.sitemap.sitemap import PostSitemap, HomeSitemap, FlowSitemap, GroupSitemap
 sitemaps = {'articles': PostSitemap, 'home': HomeSitemap, 'flow': FlowSitemap, 'group': GroupSitemap}
 
@@ -352,9 +349,7 @@ if [ $INSTALL == 'prod' ] || [ $INSTALL == 'test' ]; then
 
     access_log $PWD/projectX/logs_django/nginx/access.log main;
     sendfile on;
-    #tcp_nopush     on;
     keepalive_timeout  65;
-    #gzip  on;
     include /etc/nginx/conf.d/*.conf;
 
     server{
@@ -413,10 +408,6 @@ if [ $INSTALL == 'prod' ] || [ $INSTALL == 'test' ]; then
         alias $PWD/projectX/app_django/frontend/static/robots.txt;
       }
 
-      location /sitemap.xml {
-        alias $PWD/projectX/app_django/frontend/static/sitemap.xml;
-      }
-
       location /static {
         root $PWD/projectX/app_django/frontend;
       }
@@ -455,9 +446,7 @@ else
 
     access_log $PWD/projectX/logs_django/nginx/access.log main;
     sendfile on;
-    #tcp_nopush     on;
     keepalive_timeout  65;
-    #gzip  on;
     include /etc/nginx/conf.d/*.conf;
 
     server{
@@ -493,9 +482,6 @@ else
         alias $PWD/projectX/app_django/frontend/static/robots.txt;
       }
 
-      location /sitemap.xml {
-        alias $PWD/projectX/app_django/frontend/static/sitemap.xml;
-      }
       location /static {
         root $PWD/projectX/app_django/frontend;
       }
@@ -517,10 +503,11 @@ else
 EOF
 fi
 
-find $PWD/projectX/app_django/frontend/static -name \*.* -exec gzip -9 {} \;
-
 chmod 0777 /etc/nginx/nginx.conf
 sudo usermod -a -G hotdog nginx
+
+find $PWD/projectX/app_django/frontend/static/css -name \*.* -exec gzip -9 {} \;
+find $PWD/projectX/app_django/frontend/static/js  -name \*.* -exec gzip -9 {} \;
 
 iptables -I INPUT 4 -p tcp --dport 80 -j ACCEPT
 fuser -k 80/tcp
