@@ -249,7 +249,7 @@ from backend.services.sitemap.sitemap import PostSitemap, HomeSitemap, FlowSitem
 sitemaps = {'articles': PostSitemap, 'home': HomeSitemap, 'flow': FlowSitemap, 'group': GroupSitemap}
 
 urlpatterns = [
-  url(r"^admin/", admin.site.urls),
+  url(r"^kmizar-admin-panel/", admin.site.urls),
   url(r"^ckeditor/", include("ckeditor_uploader.urls")),
   url(r"", include("backend.urls")),
   url(r'^sitemap.xml$', xml_site.sitemap, {'sitemaps': sitemaps})
