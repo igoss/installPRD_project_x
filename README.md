@@ -78,3 +78,20 @@
 **Отводим релиз:**
 - git checkout -b branch-name
 - git push origin branch-name
+
+**Решение проблемы с миграцией данных:**
+На примере изменения размера поля varchar
+- python makemigrations
+- vim ./backend/migration/new_migration
+- Добавляем AlterTable + import models
+```python
+from django.db import migrations, models
+
+class Migration(migrations.Migration):
+ dependencies = [
+  ('backend', '0002_auto_20170606_1053'),
+ ]
+ operations = [
+  migrations.AlterField('article', 'meta_description', field=models.CharField(max_length=255))
+ ]
+```
