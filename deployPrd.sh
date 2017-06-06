@@ -245,8 +245,8 @@ from django.contrib import admin
 from django.conf.urls import url, include
 
 from django.contrib.sitemaps import views as xml_site
-from backend.services.sitemap.sitemap import PostSitemap, HomeSitemap
-sitemaps = {'articles': PostSitemap, 'home': HomeSitemap}
+from backend.services.sitemap.sitemap import PostSitemap, HomeSitemap, FlowSitemap
+sitemaps = {'articles': PostSitemap, 'home': HomeSitemap, 'flow': FlowSitemap}
 
 urlpatterns = [
   url(r"^kmizar-admin-panel/", admin.site.urls),
