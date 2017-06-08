@@ -75,6 +75,10 @@ https://www.ssllabs.com/ssltest/analyze.html
 <br>
 Посмотреть что твориться на сервере:
 - $ openssl s_client -connect hostname:443 -state -debug
+## Производительность
+- $ ab -n 1000 -c100 https://example.com/
+1000 запросов по 100 штук
+
 # Новый релиз
 ## Отводим ветку с релизом
 Создаем ветку с названием: **releases/_(номер релиза)_**
