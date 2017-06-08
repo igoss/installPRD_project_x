@@ -1,44 +1,17 @@
-# Использование 
-
-Перед 1ой установкой: 
+# Что делает.
+Скрипт выполняет раскатку проекта на dev/preview/prod стенды.
 <br>
-`$ yum install git`
+Для установки на preview/prod выполняется конфигурация окружения.
 <br>
-`$ ssh-keygen` и `$ cat ~/.ssh/id_rsa.pub` для генерации rsa-ключа.
+Серверная установка выполняется только на тачке с CentOS.
 <br>
+При установки на dev подразумевается уже настроенное окружение
 <br>
-Скрипт выполняет установку окружения и проекта для **Preview** и **Production**.
-<br>
-Для корректной работы в **production** необходимо добавить SSL-сертификаты:
-<br>
-- Основная цепочка сертификатов (private.crt и bundle.crt)=chain.crt
-- Закрытый ключ (private.key)
-- dhparam.pem
-- systemctl start nginx
-
-Для генерации **dhparam.pem**:
-`openssl dhparam -out /path_to_key/dhparam.pem 4096`
-<br>
-<br>
-**Скрипт вызывать с параметрами:**
-* -s: Hostname;
-* -f: Frontent project name;
-* -i: Install type (test | prod)
-* -bb: Branch backend;
-* -fb: Branch frontend.
-
-Запуск скрипта делать под **root**-пользователем.
-
-# Что делает?
-
-Скрипт собирает и раскатывает проект для превью / прод среды на тачке с CentOS. 
-<br>
-В процессе работы скрипта, создается окружение django-проекта, выполняется установка
-<br>
-необходимых библиотек. Выполняется настройка демонов gunicorn и nginx, создается база данных.
-<br>
+_(т.е. выполняется только раскатка и конфигурация самого приложения)_
+# За кулисами.
 * **OS configure**:
   * create user hotdog
+  * epel install / update
 * **OS app:**
   * python
   * postgresql 9.6
@@ -55,35 +28,63 @@
   * creata app
   * deploy frontend / backend
   * migrate database
-
-Для **Preview** версии подключение осуществляется через http, Debug = True
+# Запуск скрипта.
+Скрипт принимает следующие значения:
+* -t:  install type;
+* -s:  hostname;
+* -f:  frontend repo name;
+* -p:  postgresql password;
+* -fb: frontend repo branch name;
+* -bb: backend repo branch name;
+* -db: database name
+Ключи `-fb` `-bb` являются опциональными, если их не указать раскатка будет происходить с master ветки
+Ключ `-db` необходим только для установки в дев среде _(логин/пароль зашиты в коде)_
+Клюс `-p` необходим для установки в preview / prod среде _(Имя и логин базы зашиты в коде)_
+# Перед первой раскаткой или после ресетапа сервера
+## Установка git, обмен ключами
+Для выкатки на голый сервер, перед запуском скрипта нужно следующее _(прим. для centOS)_:
+* $ yum install git
+* $ ssh-keygen
+* $ cat ~/.ssh/id_rsa.pub _(скопировать ключ)_
+* Добавить ключ в профиле github
+## Для раскатки с ssl
+Для корректной раскатки проекта с использование https нужно подготовить сертификаты
 <br>
-Для **Production** версии подключение выполняется через https, Debug = False + ALLOED_HOSTS.
-<br><br>
-**Проверка демонов:**
-- systemctl status gunicorn
-- systemctl status nginx
-
-**Проверка SSL:**
-- https://www.ssllabs.com/ssltest/analyze.html (Result: A+)
-- `$ openssl s_client -connect hostname:443 -state -debug`
-
-**После переустановки ОС:** 
-- ssh-keygen -R host (на локальной машине)
-- yum install git
-- ssh-keygen
-- cat ~/.ssh/id_rsa.pub 
-- скопировать ключ и добавить его в репозиторий github
-
-**Отводим релиз:**
-- git checkout -b branch-name
-- git push origin branch-name
-
-**Решение проблемы с миграцией данных:**
+Описанные ниже шаги выполняются после раскатки проекта _(завершения работы deploy скрипта)_
+<br>
+В созданной директории **./ssl_sertificates** в хомяке СПУЗа hotdog
+* $ vim private.key (создаем закрытый ключ)
+* $ vim chain.crt   (создаем цепочку сертификатов: private.crt + bundle.crt)
+* $ openssl dhparam -out ./dhparam.pem 4096  (генерим dhparam)
+* $ systemctl start nginx
+# В случае пиздеца полезно
+## Проверка демонов
+- $ systemctl status gunicorn
+- $ systemctl status nginx
+## Рестарт демонов
+- $ systemctl restart gunicorn
+- $ systemctl restart nginx
+## Конфиг файлы
+- $ vim /etc/nginx/nginx.conf
+## Проверка SSL
+Проверить безопасность соединения можно тут:
+<br>
+https://www.ssllabs.com/ssltest/analyze.html
+<br>
+Ожидается результат: **A+**
+<br>
+Посмотреть что твориться на сервере:
+- $ openssl s_client -connect hostname:443 -state -debug
+# Новый релиз
+## Отводим ветку с релизом
+Создаем ветку с названием: **releases/_(номер релиза)_**
+- $ git checkout -b branch-name
+- $ git push origin branch-name
+## Проблемы с миграцией данных БД
 На примере изменения размера поля varchar
-- python makemigrations
-- vim ./backend/migration/new_migration
-- Добавляем AlterTable + import models
+- $ python makemigrations
+- $ vim ./backend/migration/new_migration
+- $ Добавляем AlterTable + import models
 ```python
 from django.db import migrations, models
 
