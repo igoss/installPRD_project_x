@@ -1,9 +1,24 @@
 #!/usr/bin/env bash
 
 #Description
-#
-#
-#
+#Script for autodeploy projectX
+#Deploy in: 
+#  - local (only project)
+#  - test server with ssl
+#  - test server no ssl
+#  - production install
+
+#Server requirements:
+#  - OS: centOS
+
+#Project server environment install:
+#  - PostgreSQL
+#  - Python and pip
+#  - Django environment
+#  - Project configuration
+#  - nginx + ssl / nossl configuration
+#  - gunicorn + configuretion
+
 
 #----------------------------------------------------------------------------
 #option parser
