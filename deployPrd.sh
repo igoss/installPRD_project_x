@@ -2,7 +2,7 @@
 
 #Description
 #Script for autodeploy projectX
-#Deploy in: 
+#Deploy in:
 #  - local (only project)
 #  - test server with ssl
 #  - test server no ssl
@@ -129,7 +129,7 @@ if [[ $TYPE != "dev" ]]; then
   yes Y | yum install postgresql-server
   yes Y | yum install postgresql-devel
   yes Y | yum install postgresql-contrib
-  
+
   yes Y | yum -y install https://centos7.iuscommunity.org/ius-release.rpm
   yes Y | yum -y install python35u
   yes Y | yum -y install python35u-pip
@@ -147,7 +147,7 @@ if [[ $TYPE != "dev" ]]; then
   systemctl start postgresql
 
   sed -i "s/ident/md5/g" /var/lib/pgsql/data/pg_hba.conf
-  
+
   systemctl restart postgresql
   systemctl enable postgresql
 
@@ -236,7 +236,7 @@ fi
 
 cat >> ./configuration/settings.py << EOF
 INSTALLED_APPS = INSTALLED_APPS + [
-  'django.contrib.sitemaps',  
+  'django.contrib.sitemaps',
   'ckeditor_uploader',
   'ckeditor',
   'backend',
@@ -419,6 +419,17 @@ http {
   include /etc/nginx/conf.d/*.conf;
   client_max_body_size 10M;
 
+  proxy_cache_path
+    /home/hotdog/projectX/app_django/nginx_tmp/cache
+    levels=1:2
+    keys_zone=cache:30m
+    max_size=1G;
+  proxy_temp_path /home/hotdog/projectX/app_django/nginx_tmp/proxy 1 2;
+  proxy_ignore_headers Expires Cache-Control;
+  proxy_cache_use_stale error timeout invalid_header http_502;
+  proxy_cache_bypass \$cookie_session;
+  proxy_no_cache \$cookie_session;
+
   gzip on;
   gzip_disable "msie6";
   gzip_comp_level 1;
@@ -436,8 +447,9 @@ http {
     application/xml+rss
     text/javascript
     application/javascript;
+
 EOF
-fi  
+fi
 
 
 if [[ $TYPE = "prod" ]] || [[ $TYPE = "vm"  ]]; then
@@ -446,12 +458,12 @@ if [[ $TYPE = "prod" ]] || [[ $TYPE = "vm"  ]]; then
     server_name ${SERVER_NAME}, www.${SERVER_NAME};
     listen 80;
     return 301 https://${SERVER_NAME}\$request_uri;
-  } 
+  }
 
   server {
     listen 443 ssl http2;
     server_name ${SERVER_NAME}, www.${SERVER_NAME};
-    
+
     if (\$host ~* www\.(.*)) {
       set \$host_without_www \$1;
       rewrite ^(.*)\$ http://\$host_without_www\$1 permanent;
@@ -476,7 +488,7 @@ if [[ $TYPE = "prod" ]] || [[ $TYPE = "vm"  ]]; then
     add_header Strict-Transport-Security "max-age=31536000;";
 
 EOF
-fi 
+fi
 if [[ $TYPE = "nossl" ]]; then
   cat >> /etc/nginx/nginx.conf << EOF
   server {
@@ -500,6 +512,9 @@ if [[ $TYPE != "dev" ]]; then
     }
 
     location / {
+      proxy_cache cache;
+      proxy_cache_valid 10m;
+      proxy_cache_valid 404 1m;
       proxy_set_header Host \$http_host;
       proxy_set_header X-Real-IP \$remote_addr;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -512,16 +527,20 @@ if [[ $TYPE != "dev" ]]; then
 EOF
 fi
 
-if [[ $TYPE != "dev" ]]; then    
+if [[ $TYPE != "dev" ]]; then
   mkdir $PWD/ssl_certificate
+  mkdir -p $PWD/projectX/app_django/nginx_tmp/proxy
+  mkdir -p $PWD/projectX/app_django/nginx_tmp/cache
   mkdir -p $PWD/projectX/logs_django/nginx
 
   chmod 0644 /etc/nginx/nginx.conf
-  sudo usermod -a -G hotdog nginx
+  chmod 700 $PWD/projectX/app_django/nginx_tmp/proxy
+  chmod 700 $PWD/projectX/app_django/nginx_tmp/cache
 
+  sudo usermod -a -G hotdog nginx
   find $PWD/projectX/app_django/frontend/static/css -name \*.* -exec gzip -9 {} \;
   find $PWD/projectX/app_django/frontend/static/js -name \*.* -exec gzip -9 {} \;
-  
+
   iptables -I INPUT 4 -p tcp --dport 80 -j ACCEPT
   iptables -I INPUT 4 -p tcp --dport 443 -j ACCEPT
 
@@ -530,5 +549,3 @@ if [[ $TYPE != "dev" ]]; then
   service nginx restart
   systemctl enable nginx
 fi
-
-
