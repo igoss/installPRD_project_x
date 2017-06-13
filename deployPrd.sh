@@ -427,7 +427,7 @@ http {
   proxy_temp_path /home/hotdog/projectX/app_django/nginx_tmp/proxy 1 2;
   proxy_ignore_headers Expires Cache-Control;
   proxy_cache_use_stale error timeout invalid_header http_502;
-  proxy_cache_bypass \$cookie_session;
+  proxy_cache_bypass \$cookie_session \$http_x_update;
   proxy_no_cache \$cookie_session;
 
   gzip on;
