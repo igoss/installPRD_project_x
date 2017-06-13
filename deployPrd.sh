@@ -335,6 +335,18 @@ if [[ $TYPE != "dev" ]]; then
   rm -rf ./${FRONTEND}/.git ./${FRONTEND}/README.md ./${FRONTEND}/.gitignore
 fi
 
+if [[ $TYPE = "dev" ]]; then
+  sed -i "s/https/http:\/\/127.0.0.1\//g" $PWD/backend/models.py
+fi
+
+if [[ $TYPE = "nossl" ]]; then
+  sed -i "s/https/http:\/\/${SERVER_NAME}\//g" $PWD/backend/models.py
+fi
+
+if [[ $TYPE = "prod" ]] || [[ $TYPE = "vm"  ]]; then
+  sed -i "s/https/https:\/\/${SERVER_NAME}\//g" $PWD/backend/models.py
+fi
+
 if [[ $TYPE = "prod" ]]; then
   sed -i -e "s/name='robots'/name='yandex-verification'/g" ./${FRONTEND}/templates/base.html >> /dev/null
   sed -i -e "s/content='noindex,nofollow'/content='e2ec3935ebde1b47'/g" ./${FRONTEND}/templates/base.html >> /dev/null
