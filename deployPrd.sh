@@ -517,10 +517,14 @@ if [[ $TYPE != "dev" ]]; then
 
     location /static {
       root $PWD/projectX/app_django/frontend;
+      add_header Cache-Control private;
+      expires 360d;
     }
 
     location /media {
       root $PWD;
+      add_header Cache-Control public;
+      expires 360d;
     }
 
     location / {
