@@ -422,7 +422,7 @@ http {
   proxy_cache_path
     /home/hotdog/projectX/app_django/nginx_tmp/cache
     levels=1:2
-    keys_zone=cache:30m
+    keys_zone=cache:480m
     max_size=1G;
   proxy_temp_path /home/hotdog/projectX/app_django/nginx_tmp/proxy 1 2;
   proxy_ignore_headers Expires Cache-Control;
@@ -513,8 +513,8 @@ if [[ $TYPE != "dev" ]]; then
 
     location / {
       proxy_cache cache;
-      proxy_cache_valid 10m;
-      proxy_cache_valid 404 1m;
+      proxy_cache_valid 480m;
+      proxy_cache_valid 404 10m;
       proxy_set_header Host \$http_host;
       proxy_set_header X-Real-IP \$remote_addr;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
