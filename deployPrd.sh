@@ -336,15 +336,15 @@ if [[ $TYPE != "dev" ]]; then
 fi
 
 if [[ $TYPE = "dev" ]]; then
-  sed -i "s/https/http:\/\/127.0.0.1\//g" $PWD/backend/models.py
+  sed -i "s/https/http:\/\/127.0.0.1/g" $PWD/backend/models.py
 fi
 
 if [[ $TYPE = "nossl" ]]; then
-  sed -i "s/https/http:\/\/${SERVER_NAME}\//g" $PWD/backend/models.py
+  sed -i "s/https/http:\/\/${SERVER_NAME}/g" $PWD/backend/models.py
 fi
 
 if [[ $TYPE = "prod" ]] || [[ $TYPE = "vm"  ]]; then
-  sed -i "s/https/https:\/\/${SERVER_NAME}\//g" $PWD/backend/models.py
+  sed -i "s/https/https:\/\/${SERVER_NAME}/g" $PWD/backend/models.py
 fi
 
 if [[ $TYPE = "prod" ]]; then
