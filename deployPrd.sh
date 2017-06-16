@@ -526,7 +526,13 @@ if [[ $TYPE != "dev" ]]; then
       add_header Cache-Control public;
       expires 360d;
     }
-
+    
+    error_page 404 /404.html;
+    location = /404.html {
+      root $PWD/projectX/app_django/frontend/templates;
+      internal;
+    }
+    
     location / {
       proxy_cache cache;
       proxy_cache_valid 480m;
