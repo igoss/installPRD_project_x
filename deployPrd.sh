@@ -345,7 +345,7 @@ fi
 
 if [[ $TYPE = "prod" ]] || [[ $TYPE = "vm"  ]]; then
   sed -i "s/https/https:\/\/${SERVER_NAME}/g" $PWD/backend/models.py
-  sed -i "11r ./${FRONTEND}/templates/base.html" ./${FRONTEND}/templates/yandex.txt
+  sed -i "11r ./${FRONTEND}/templates/yandex.txt" ./${FRONTEND}/templates/base.html
   rm -rf ./${FRONTEND}/templates/yandex.txt
 fi
 
